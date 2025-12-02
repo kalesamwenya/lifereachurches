@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Mic, Clock, Calendar, Loader2, AlertCircle, ChevronDown } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Mic, Clock, Calendar, Loader2, AlertCircle, ChevronDown, ChevronUp, X, Square } from 'lucide-react';
 
 // --- Utility: Time Formatter ---
 const formatTime = (seconds) => {
@@ -11,7 +11,7 @@ const formatTime = (seconds) => {
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
 };
 
-// --- Fallback Data (Shown only if live fetch fails) ---
+// --- Fallback Data ---
 const fallbackEpisodes = [
     {
         id: 101,
@@ -33,6 +33,9 @@ export default function PodcastPage() {
     const [progress, setProgress] = useState(0);
     const [duration, setDuration] = useState(0);
 
+    // Mobile Player State
+    const [isFullPlayer, setIsFullPlayer] = useState(false);
+
     // Pagination State
     const [visibleCount, setVisibleCount] = useState(5);
 
@@ -43,8 +46,6 @@ export default function PodcastPage() {
         const fetchPodcast = async () => {
             try {
                 const RSS_URL = 'https://anchor.fm/s/128a41cc/podcast/rss';
-
-                // Using corsproxy.io for better raw text retrieval
                 const response = await fetch(`https://corsproxy.io/?${encodeURIComponent(RSS_URL)}`);
 
                 if (!response.ok) throw new Error("Network response was not ok");
@@ -53,29 +54,22 @@ export default function PodcastPage() {
                 const parser = new DOMParser();
                 const xml = parser.parseFromString(xmlText, "text/xml");
 
-                // Check for parsing errors
                 const parseError = xml.querySelector("parsererror");
                 if (parseError) throw new Error("XML Parsing Error");
 
                 const items = xml.querySelectorAll("item");
 
-                // Channel default image
                 const channelImage = xml.querySelector("image > url")?.textContent ||
                     xml.getElementsByTagName("itunes:image")[0]?.getAttribute("href");
 
                 const parsedEpisodes = Array.from(items).map((item, index) => {
-                    // Robust selector logic for XML namespaces
                     const title = item.querySelector("title")?.textContent;
-
-                    // Clean description (remove HTML tags)
                     const descRaw = item.querySelector("description")?.textContent;
                     const description = descRaw?.replace(/(<([^>]+)>)/gi, "").substring(0, 180) + "..." || "No description.";
-
                     const pubDate = new Date(item.querySelector("pubDate")?.textContent).toLocaleDateString();
                     const enclosure = item.querySelector("enclosure");
                     const audioUrl = enclosure?.getAttribute("url");
 
-                    // Handle Duration (sometimes it's seconds, sometimes HH:MM:SS)
                     const durationTag = item.getElementsByTagName("itunes:duration")[0];
                     let durationDisplay = "00:00";
                     if (durationTag) {
@@ -123,7 +117,8 @@ export default function PodcastPage() {
 
     // --- 2. Audio Control Logic ---
 
-    const togglePlay = () => {
+    const togglePlay = (e) => {
+        e?.stopPropagation();
         if (!audioRef.current || !currentEp?.url) return;
         if (isPlaying) {
             audioRef.current.pause();
@@ -131,6 +126,16 @@ export default function PodcastPage() {
             audioRef.current.play().catch(e => console.error("Playback error:", e));
         }
         setIsPlaying(!isPlaying);
+    };
+
+    const stop = (e) => {
+        e?.stopPropagation();
+        if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
+            setIsPlaying(false);
+            setProgress(0);
+        }
     };
 
     const onTimeUpdate = () => {
@@ -144,7 +149,6 @@ export default function PodcastPage() {
         if (!ep.url) return;
         setCurrentEp(ep);
         setIsPlaying(true);
-        // Reset progress immediately for UI responsiveness
         setProgress(0);
         setTimeout(() => {
             if(audioRef.current) {
@@ -154,13 +158,15 @@ export default function PodcastPage() {
         }, 50);
     };
 
-    const skip = (seconds) => {
+    const skip = (seconds, e) => {
+        e?.stopPropagation();
         if (audioRef.current) {
             audioRef.current.currentTime += seconds;
         }
     };
 
     const handleProgressChange = (e) => {
+        e?.stopPropagation();
         const newTime = (e.target.value / 100) * duration;
         if (audioRef.current) {
             audioRef.current.currentTime = newTime;
@@ -170,6 +176,18 @@ export default function PodcastPage() {
 
     const loadMore = () => {
         setVisibleCount(prev => prev + 5);
+    };
+
+    // --- Mobile Player Logic ---
+    const handlePlayerClick = () => {
+        if (window.innerWidth < 1024 && !isFullPlayer) {
+            setIsFullPlayer(true);
+        }
+    };
+
+    const closeFullPlayer = (e) => {
+        e.stopPropagation();
+        setIsFullPlayer(false);
     };
 
     if (loading) {
@@ -192,9 +210,34 @@ export default function PodcastPage() {
 
                 <div className="flex flex-col lg:flex-row gap-12 items-start">
 
-                    {/* --- Main Player Area (Fixed Bottom on Mobile) --- */}
-                    <div className="lg:w-2/3 w-full fixed bottom-0 left-0 z-50 lg:static lg:sticky lg:top-24">
-                        <div className="bg-gray-900 border-t border-gray-800 lg:border-none lg:bg-gradient-to-br lg:from-gray-800 lg:to-gray-900 p-4 lg:p-8 rounded-none rounded-t-3xl lg:rounded-3xl shadow-[0_-8px_30px_rgba(0,0,0,0.5)] lg:shadow-2xl relative overflow-hidden">
+                    {/* --- Main Player Area --- */}
+                    <div
+                        onClick={handlePlayerClick}
+                        className={`
+                lg:w-2/3 w-full transition-all duration-300 ease-in-out
+                ${isFullPlayer
+                            ? 'fixed inset-0 bg-gray-900 flex flex-col justify-center px-6 z-[100]'
+                            : 'fixed bottom-0 left-0 lg:static lg:sticky lg:top-24 cursor-pointer lg:cursor-default z-50'
+                        }
+              `}
+                    >
+                        <div className={`
+                  bg-gray-900 lg:bg-gradient-to-br lg:from-gray-800 lg:to-gray-900 
+                  border-t border-gray-800 lg:border-none lg:p-8 lg:rounded-3xl lg:shadow-2xl 
+                  relative overflow-hidden
+                  ${isFullPlayer ? 'h-full flex flex-col justify-center border-none' : 'p-4 rounded-t-3xl shadow-[0_-8px_30px_rgba(0,0,0,0.5)]'}
+               `}>
+
+                            {/* Close Button (Visible on Mobile Full Screen) */}
+                            {isFullPlayer && (
+                                <button
+                                    onClick={closeFullPlayer}
+                                    className="absolute top-8 right-6 p-3 bg-gray-800 text-white rounded-full z-[110] shadow-xl border border-gray-700 hover:bg-gray-700 transition-colors"
+                                >
+                                    <ChevronDown size={32} />
+                                </button>
+                            )}
+
                             <div className="hidden lg:block absolute top-0 right-0 p-12 opacity-5">
                                 <Mic size={200} />
                             </div>
@@ -207,50 +250,120 @@ export default function PodcastPage() {
                                 onEnded={() => setIsPlaying(false)}
                             />
 
-                            <div className="flex flex-row gap-4 lg:gap-8 items-center relative z-10">
+                            <div className={`
+                    flex items-center relative z-10
+                    ${isFullPlayer ? 'flex-col text-center gap-8' : 'flex-row gap-4 lg:gap-8'}
+                  `}>
+                                {/* Artwork */}
                                 <div
-                                    className="w-14 h-14 lg:w-48 lg:h-48 bg-gray-700 rounded-lg lg:rounded-2xl shadow-xl flex-shrink-0 bg-cover bg-center border border-gray-600"
+                                    className={`
+                          bg-gray-700 shadow-xl flex-shrink-0 bg-cover bg-center border border-gray-600 transition-all
+                          ${isFullPlayer
+                                        ? 'w-64 h-64 rounded-3xl shadow-2xl mt-8'
+                                        : 'w-14 h-14 rounded-lg lg:w-48 lg:h-48 lg:rounded-2xl'
+                                    }
+                        `}
                                     style={{backgroundImage: `url("${currentEp?.image}")`}}
                                 ></div>
 
                                 <div className="flex-1 w-full min-w-0">
-                        <span className="hidden lg:block text-orange-500 font-bold uppercase tracking-widest text-xs mb-2 animate-pulse">
+                                    {/* Status Label */}
+                                    <span className={`
+                           text-orange-500 font-bold uppercase tracking-widest text-xs mb-2 animate-pulse
+                           ${isFullPlayer ? 'block' : 'hidden lg:block'}
+                        `}>
                             {isPlaying ? 'Now Playing' : 'Paused'}
                         </span>
-                                    <h2 className="text-sm lg:text-3xl font-bold lg:font-black mb-1 lg:mb-2 truncate pr-2">{currentEp?.title}</h2>
-                                    <p className="hidden lg:block text-gray-400 mb-6 text-sm line-clamp-2">{currentEp?.desc}</p>
 
-                                    {/* Mobile Progress Bar (Visible only on mobile inside the flex layout) */}
-                                    <div className="lg:hidden w-full mb-2">
-                                        <div className="h-1 bg-gray-700 rounded-full overflow-hidden w-full">
-                                            <div className="h-full bg-orange-500" style={{ width: `${duration ? (progress / duration) * 100 : 0}%` }}></div>
+                                    {/* Title */}
+                                    <h2 className={`
+                           font-bold truncate pr-2
+                           ${isFullPlayer ? 'text-2xl md:text-3xl mb-4 whitespace-normal' : 'text-sm lg:text-3xl lg:font-black mb-1 lg:mb-2'}
+                        `}>
+                                        {currentEp?.title}
+                                    </h2>
+
+                                    {/* Description */}
+                                    <p className={`
+                           text-gray-400 mb-6 text-sm line-clamp-2
+                           ${isFullPlayer ? 'block px-4' : 'hidden lg:block'}
+                        `}>
+                                        {currentEp?.desc}
+                                    </p>
+
+                                    {/* Mobile Mini Progress Bar */}
+                                    {!isFullPlayer && (
+                                        <div className="lg:hidden w-full mb-2">
+                                            <div className="h-1 bg-gray-700 rounded-full overflow-hidden w-full">
+                                                <div className="h-full bg-orange-500" style={{ width: `${duration ? (progress / duration) * 100 : 0}%` }}></div>
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
 
-                                    {/* Controls */}
-                                    <div className="flex items-center justify-between lg:justify-start gap-4 lg:gap-8">
-                                        {/* Mobile: Simple Play/Pause + Time */}
-                                        <div className="lg:hidden text-[10px] text-gray-400 font-mono">
-                                            {formatTime(progress)} / {formatTime(duration)}
-                                        </div>
+                                    {/* Controls Container */}
+                                    <div className={`
+                           flex items-center 
+                           ${isFullPlayer ? 'justify-center gap-8 mt-8' : 'justify-between lg:justify-start gap-4 lg:gap-8'}
+                        `}>
 
-                                        <div className="flex items-center gap-4 lg:gap-8">
-                                            <button onClick={() => skip(-15)} className="hidden lg:flex text-gray-400 hover:text-white transition-colors flex-col items-center gap-1">
-                                                <SkipBack size={24} />
+                                        {/* Mini Time Display */}
+                                        {!isFullPlayer && (
+                                            <div className="lg:hidden text-[10px] text-gray-400 font-mono">
+                                                {formatTime(progress)} / {formatTime(duration)}
+                                            </div>
+                                        )}
+
+                                        {/* Buttons */}
+                                        <div className={`flex items-center ${isFullPlayer ? 'gap-8' : 'gap-4 lg:gap-6'}`}>
+                                            {/* Skip Back */}
+                                            <button
+                                                onClick={(e) => skip(-15, e)}
+                                                className={`
+                                    text-gray-400 hover:text-white transition-colors flex-col items-center gap-1
+                                    ${isFullPlayer ? 'flex' : 'hidden lg:flex'}
+                                 `}
+                                            >
+                                                <SkipBack size={isFullPlayer ? 32 : 24} />
                                                 <span className="text-[10px]">-15s</span>
                                             </button>
 
+                                            {/* Play/Pause */}
                                             <button
                                                 onClick={togglePlay}
                                                 disabled={!currentEp?.url}
-                                                className={`w-10 h-10 lg:w-20 lg:h-20 rounded-full flex items-center justify-center text-white hover:scale-105 transition-transform shadow-lg shadow-orange-900/50 ${!currentEp?.url ? 'bg-gray-600 cursor-not-allowed' : 'bg-orange-600'}`}
+                                                className={`
+                                     rounded-full flex items-center justify-center text-white hover:scale-105 transition-transform shadow-lg shadow-orange-900/50
+                                     ${!currentEp?.url ? 'bg-gray-600 cursor-not-allowed' : 'bg-orange-600'}
+                                     ${isFullPlayer ? 'w-20 h-20' : 'w-10 h-10 lg:w-20 lg:h-20'}
+                                  `}
                                             >
-                                                {isPlaying ? <Pause size={20} className="lg:hidden" fill="currentColor" /> : <Play size={20} className="lg:hidden ml-0.5" fill="currentColor" />}
-                                                {isPlaying ? <Pause size={32} className="hidden lg:block" fill="currentColor" /> : <Play size={32} className="hidden lg:block ml-1" fill="currentColor" />}
+                                                {isPlaying
+                                                    ? <Pause size={isFullPlayer ? 32 : (window.innerWidth < 1024 ? 20 : 32)} fill="currentColor" />
+                                                    : <Play size={isFullPlayer ? 32 : (window.innerWidth < 1024 ? 20 : 32)} fill="currentColor" className="ml-1" />
+                                                }
                                             </button>
 
-                                            <button onClick={() => skip(15)} className="hidden lg:flex text-gray-400 hover:text-white transition-colors flex-col items-center gap-1">
-                                                <SkipForward size={24} />
+                                            {/* Stop Button */}
+                                            <button
+                                                onClick={(e) => stop(e)}
+                                                className={`
+                                    text-gray-400 hover:text-red-500 transition-colors flex-col items-center gap-1
+                                    ${isFullPlayer ? 'flex' : 'hidden lg:flex'}
+                                 `}
+                                            >
+                                                <Square size={isFullPlayer ? 28 : 20} fill="currentColor" />
+                                                <span className="text-[10px]">Stop</span>
+                                            </button>
+
+                                            {/* Skip Forward */}
+                                            <button
+                                                onClick={(e) => skip(15, e)}
+                                                className={`
+                                    text-gray-400 hover:text-white transition-colors flex-col items-center gap-1
+                                    ${isFullPlayer ? 'flex' : 'hidden lg:flex'}
+                                 `}
+                                            >
+                                                <SkipForward size={isFullPlayer ? 32 : 24} />
                                                 <span className="text-[10px]">+15s</span>
                                             </button>
                                         </div>
@@ -258,14 +371,18 @@ export default function PodcastPage() {
                                 </div>
                             </div>
 
-                            {/* Desktop Progress Bar */}
-                            <div className="hidden lg:block mt-8">
+                            {/* Main Progress Bar (Desktop & Mobile Full) */}
+                            <div className={`
+                     mt-8
+                     ${isFullPlayer ? 'block w-full px-4' : 'hidden lg:block'}
+                  `}>
                                 <input
                                     type="range"
                                     min="0"
                                     max="100"
                                     value={duration ? (progress / duration) * 100 : 0}
                                     onChange={handleProgressChange}
+                                    onClick={(e) => e.stopPropagation()}
                                     disabled={!duration}
                                     className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-orange-500 hover:accent-orange-400 disabled:opacity-50"
                                 />
@@ -276,10 +393,16 @@ export default function PodcastPage() {
                             </div>
                         </div>
 
-                        {/* Description Box (Desktop Only) */}
-                        <div className="mt-12 hidden lg:block">
+                        {/* Description Box */}
+                        <div className={`
+                  mt-12
+                  ${isFullPlayer ? 'block px-4 pb-8' : 'hidden lg:block'}
+               `}>
                             <h3 className="text-2xl font-bold mb-4">About This Episode</h3>
-                            <div className="text-gray-400 leading-relaxed text-lg p-6 bg-gray-800/50 rounded-2xl border border-gray-700">
+                            <div className={`
+                     text-gray-400 leading-relaxed text-lg rounded-2xl border border-gray-700
+                     ${isFullPlayer ? 'bg-transparent border-none p-0' : 'p-6 bg-gray-800/50'}
+                  `}>
                                 <p>{currentEp?.desc}</p>
                                 <div className="mt-4 flex items-center gap-2 text-sm text-orange-500 font-bold">
                                     <Calendar size={16} /> Published: {currentEp?.date}
