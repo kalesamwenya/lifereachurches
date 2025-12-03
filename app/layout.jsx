@@ -2,26 +2,85 @@
 import React from 'react';
 import Navbar from '@/components/header/Navbar';
 import Footer from '@/components/footer/footer';
-import GlobalPlayer from '@/components/GlobalPlayer';
-import { PlayerProvider } from '@/context/PlayerContext';
-import './globals.css';
+import "./globals.css";
+// --- Global SEO Configuration ---
+export const viewport = {
+    themeColor: '#ea580c', // Matches orange-600
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
+};
+
 export const metadata = {
-    title: 'Life Reach Church',
-    description: 'Reaching every soul.',
+    metadataBase: new URL('https://lifereach.church'), // Replace with actual domain in production
+    title: {
+        default: 'Life Reach Church | Reaching Every Soul',
+        template: '%s | Life Reach Church',
+    },
+    description: 'Welcome to Life Reach Church in Lusaka, Zambia. We exist to reach the lost, raise disciples, and release leaders. Join us for authentic community and powerful worship.',
+    keywords: ['Church in Lusaka', 'Zambia Church', 'Life Reach', 'Sermons', 'Christianity', 'Worship', 'Community', 'Bible Study', 'Youth Ministry'],
+    authors: [{ name: 'Life Reach Media Team' }],
+    creator: 'Life Reach Church',
+    publisher: 'Life Reach Church',
+    formatDetection: {
+        email: false,
+        address: false,
+        telephone: false,
+    },
+    // Open Graph (Facebook, LinkedIn, WhatsApp)
+    openGraph: {
+        title: 'Life Reach Church | Reaching Every Soul',
+        description: 'We are a movement dedicated to showing the world that Jesus is alive. Join us for Sunday services at 9AM & 11AM.',
+        url: 'https://lifereach.church',
+        siteName: 'Life Reach Church',
+        locale: 'en_US', // or 'en_ZM'
+        type: 'website',
+        images: [
+            {
+                url: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=1200',
+                width: 1200,
+                height: 630,
+                alt: 'Life Reach Church Worship Service',
+            },
+        ],
+    },
+    // Twitter Card
+    twitter: {
+        card: 'summary_large_image',
+        title: 'Life Reach Church',
+        description: 'Reaching the lost, Raising disciples, and Releasing leaders. Join the movement.',
+        images: ['https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=1200'],
+        creator: '@lifereachchurch',
+    },
+    // Search Engine Crawlers
+    robots: {
+        index: true,
+        follow: true,
+        googleBot: {
+            index: true,
+            follow: true,
+            'max-video-preview': -1,
+            'max-image-preview': 'large',
+            'max-snippet': -1,
+        },
+    },
+    icons: {
+        icon: '/favicon.ico',
+        shortcut: '/favicon-16x16.png',
+        apple: '/apple-touch-icon.png',
+    },
+    manifest: '/site.webmanifest',
 };
 
 export default function RootLayout({ children }) {
     return (
         <html lang="en">
         <body className="bg-white text-gray-900 font-sans selection:bg-orange-200 selection:text-orange-900">
-        <PlayerProvider>
-            <Navbar />
-            <main className="min-h-screen pt-0 pb-20 lg:pb-0">
-                {children}
-            </main>
-            <GlobalPlayer />
-            <Footer />
-        </PlayerProvider>
+        <Navbar />
+        <main className="min-h-screen pt-0 pb-20 lg:pb-0">
+            {children}
+        </main>
+        <Footer />
         </body>
         </html>
     );

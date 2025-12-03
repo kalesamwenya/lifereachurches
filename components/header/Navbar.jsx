@@ -49,7 +49,7 @@ export default function Navbar() {
     ];
 
     return (
-        <nav className={`fixed w-full z-50 transition-all duration-500 ${isScrolled ? 'bg-white shadow-lg py-3' : 'bg-transparent py-6'}`}>
+        <nav className={`fixed w-full z-[9999] transition-all duration-500 ${isScrolled ? 'bg-white shadow-lg py-3' : 'bg-transparent py-6'}`}>
             <div className="container mx-auto px-6 flex justify-between items-center">
                 <a href="/" className={`text-2xl font-black cursor-pointer flex items-center gap-2 tracking-tight ${isScrolled ? 'text-gray-900' : 'text-white'}`}>
                     <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center text-white shadow-lg">
