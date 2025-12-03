@@ -1,10 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Menu, X, Heart, ChevronDown, Calendar, Mic, BookOpen, PlayCircle } from 'lucide-react';
+import { Menu, X, Heart, ChevronDown, Mic, BookOpen, PlayCircle, Hand } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// --- Mock Components/Hooks ---
 const usePathname = () => {
     const [pathname, setPathname] = useState('/');
     useEffect(() => {
@@ -13,17 +12,15 @@ const usePathname = () => {
     return pathname;
 };
 
-const Button = ({ children, variant = 'primary', className = '', onClick, type = 'button' }) => {
+const Button = ({ children, variant = 'primary', className = '', onClick }) => {
     const baseStyle = "px-6 py-3 rounded-full font-bold transition-all duration-300 flex items-center justify-center gap-2 transform active:scale-95";
     const variants = {
         primary: "bg-orange-600 text-white hover:bg-orange-700 shadow-lg hover:shadow-orange-500/30",
         secondary: "bg-white text-gray-900 hover:bg-gray-50 border border-gray-200 shadow-sm",
         outline: "bg-transparent border-2 border-white text-white hover:bg-white hover:text-gray-900",
-        dark: "bg-gray-900 text-white hover:bg-gray-800"
     };
-    return <button type={type} onClick={onClick} className={`${baseStyle} ${variants[variant]} ${className}`}>{children}</button>;
+    return <button onClick={onClick} className={`${baseStyle} ${variants[variant]} ${className}`}>{children}</button>;
 };
-// -----------------------------
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
@@ -41,6 +38,8 @@ export default function Navbar() {
     const departments = [
         { name: 'Ministries', path: '/ministries' },
         { name: 'Book Library', path: '/library' },
+        // Added Volunteer Link
+        { name: 'Volunteer', path: '/volunteer' },
     ];
 
     const media = [
@@ -52,7 +51,6 @@ export default function Navbar() {
     return (
         <nav className={`fixed w-full z-50 transition-all duration-500 ${isScrolled ? 'bg-white shadow-lg py-3' : 'bg-transparent py-6'}`}>
             <div className="container mx-auto px-6 flex justify-between items-center">
-                {/* Logo */}
                 <a href="/" className={`text-2xl font-black cursor-pointer flex items-center gap-2 tracking-tight ${isScrolled ? 'text-gray-900' : 'text-white'}`}>
                     <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center text-white shadow-lg">
                         <Heart size={20} fill="currentColor" />
@@ -60,12 +58,10 @@ export default function Navbar() {
                     Life Reach Church
                 </a>
 
-                {/* Desktop Nav */}
                 <div className="hidden lg:flex items-center gap-6">
                     <a href="/" className={`font-semibold text-sm uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/' ? 'text-orange-500' : (isScrolled ? 'text-gray-600' : 'text-gray-200')}`}>Home</a>
                     <a href="/about" className={`font-semibold text-sm uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/about' ? 'text-orange-500' : (isScrolled ? 'text-gray-600' : 'text-gray-200')}`}>About</a>
 
-                    {/* Media Dropdown */}
                     <div className="relative group" onMouseEnter={() => setMediaDropdown(true)} onMouseLeave={() => setMediaDropdown(false)}>
                         <button className={`font-semibold text-sm uppercase tracking-wide transition-colors flex items-center gap-1 hover:text-orange-500 ${media.some(m => pathname.includes(m.path)) ? 'text-orange-500' : (isScrolled ? 'text-gray-600' : 'text-gray-200')}`}>
                             Media <ChevronDown size={14} />
@@ -83,7 +79,6 @@ export default function Navbar() {
                         </AnimatePresence>
                     </div>
 
-                    {/* Departments Dropdown */}
                     <div className="relative group" onMouseEnter={() => setDeptDropdown(true)} onMouseLeave={() => setDeptDropdown(false)}>
                         <button className={`font-semibold text-sm uppercase tracking-wide transition-colors flex items-center gap-1 hover:text-orange-500 ${departments.some(d => pathname.includes(d.path)) ? 'text-orange-500' : (isScrolled ? 'text-gray-600' : 'text-gray-200')}`}>
                             Connect <ChevronDown size={14} />
@@ -114,13 +109,11 @@ export default function Navbar() {
                     </div>
                 </div>
 
-                {/* Mobile Toggle */}
                 <button className={`lg:hidden ${isScrolled ? 'text-gray-900' : 'text-white'}`} onClick={() => setIsOpen(!isOpen)}>
                     {isOpen ? <X size={32} /> : <Menu size={32} />}
                 </button>
             </div>
 
-            {/* Mobile Menu */}
             <AnimatePresence>
                 {isOpen && (
                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: '100vh' }} exit={{ opacity: 0, height: 0 }} className="lg:hidden absolute top-0 left-0 w-full bg-white z-40 overflow-y-auto pt-24 pb-12">
@@ -143,6 +136,7 @@ export default function Navbar() {
                                     <a href="/ministries" className="text-lg font-medium text-gray-700">Ministries</a>
                                     <a href="/library" className="text-lg font-medium text-gray-700">Book Library</a>
                                     <a href="/events" className="text-lg font-medium text-gray-700">Events</a>
+                                    <a href="/volunteer" className="text-lg font-medium text-gray-700">Volunteer</a>
                                 </div>
                             </div>
 
@@ -151,7 +145,7 @@ export default function Navbar() {
 
                             <div className="grid grid-cols-2 gap-4 mt-8">
                                 <a href="/give"><Button className="w-full">Give</Button></a>
-                                <a href="/live"><Button variant="dark" className="w-full">Live Stream</Button></a>
+                                <a href="/live"><Button variant="outline" className="w-full !text-gray-900 !border-gray-900">Live Stream</Button></a>
                             </div>
                         </div>
                     </motion.div>

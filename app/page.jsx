@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowRight, Sun, MapPin, Play, User, Calendar,
   Clock, Instagram, Coffee, Baby, Car, Quote,
   Smartphone, Mail, Heart, Users, Music, HelpCircle,
-  ChevronDown, CheckCircle, ArrowUpRight
+  ChevronDown, CheckCircle, ArrowUpRight, ChevronLeft, ChevronRight, PenTool
 } from 'lucide-react';
 
 // --- Local UI Components ---
@@ -89,7 +89,9 @@ const nextSteps = [
 
 const testimonials = [
   { id: 1, name: "Sarah J.", role: "Member since 2021", quote: "I walked in feeling broken and alone. I walked out knowing I had a family. Life Reach changed my trajectory.", image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=200" },
-  { id: 2, name: "The Miller Family", role: "Members since 2019", quote: "Our kids actually wake us up on Sundays wanting to go to church. The kids ministry is phenomenal!", image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200" }
+  { id: 2, name: "The Miller Family", role: "Members since 2019", quote: "Our kids actually wake us up on Sundays wanting to go to church. The kids ministry is phenomenal!", image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200" },
+  { id: 3, name: "David K.", role: "Volunteer", quote: "Serving at Life Reach has given me a sense of purpose I never expected. It's more than just a church; it's a home.", image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=200" },
+  { id: 4, name: "Emily R.", role: "New Believer", quote: "I was skeptical about faith, but the community here welcomed me with open arms. I finally found peace.", image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200" },
 ];
 
 const galleryImages = [
@@ -104,6 +106,24 @@ const galleryImages = [
 // -------------------
 
 export default function HomePage() {
+  const [currentTestimonial, setCurrentTestimonial] = useState(0);
+
+  // Auto-advance carousel
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const nextTestimonial = () => {
+    setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
+  };
+
+  const prevTestimonial = () => {
+    setCurrentTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length);
+  };
+
   return (
       <>
         {/* 1. HERO SECTION */}
@@ -163,9 +183,8 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* 3. FEATURED SERMON BRIEF (Pastoral Focus) */}
+        {/* 3. FEATURED SERMON BRIEF */}
         <section className="py-24 bg-gray-900 relative overflow-hidden">
-          {/* Background overlay */}
           <div
               className="absolute inset-0 bg-cover bg-center opacity-20 mix-blend-overlay"
               style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1544427920-c49ccfb85579?auto=format&fit=crop&q=80&w=1920")' }}
@@ -173,7 +192,6 @@ export default function HomePage() {
 
           <div className="container mx-auto px-6 relative z-10">
             <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-24">
-              {/* Text Content */}
               <motion.div
                   initial={{ opacity: 0, x: -30 }}
                   whileInView={{ opacity: 1, x: 0 }}
@@ -215,7 +233,6 @@ export default function HomePage() {
                 </div>
               </motion.div>
 
-              {/* Visual / Video Placeholder */}
               <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   whileInView={{ opacity: 1, scale: 1 }}
@@ -379,27 +396,87 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* 8. STORIES OF CHANGE */}
-        <section className="py-24 bg-gray-50">
-          <div className="container mx-auto px-6">
+        {/* 8. STORIES OF CHANGE (CAROUSEL) */}
+        <section className="py-24 bg-gray-50 relative overflow-hidden">
+          {/* Background decoration */}
+          <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>
+
+          <div className="container mx-auto px-6 relative z-10">
             <SectionTitle title="Stories of Change" subtitle="Real People. Real God." />
 
-            <div className="grid md:grid-cols-2 gap-8">
-              {testimonials.map((item) => (
-                  <Card key={item.id} className="p-10 border border-gray-100 flex flex-col md:flex-row gap-6 items-center md:items-start text-center md:text-left">
-                    <div className="flex-shrink-0">
-                      <img src={item.image} alt={item.name} className="w-24 h-24 rounded-full object-cover border-4 border-orange-100 shadow-md" />
+            <div className="max-w-4xl mx-auto relative">
+              <AnimatePresence mode='wait'>
+                <motion.div
+                    key={currentTestimonial}
+                    initial={{ opacity: 0, x: 50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -50 }}
+                    transition={{ duration: 0.5 }}
+                    className="w-full"
+                >
+                  <Card className="p-10 md:p-16 border border-gray-100 flex flex-col md:flex-row gap-8 items-center text-center md:text-left shadow-2xl relative">
+                    {/* Quote Icon Background */}
+                    <Quote className="absolute top-8 right-8 text-orange-100 w-24 h-24 rotate-12 opacity-50" fill="currentColor" />
+
+                    <div className="flex-shrink-0 relative">
+                      <div className="w-32 h-32 md:w-48 md:h-48 rounded-full p-2 border-2 border-dashed border-orange-200">
+                        <img
+                            src={testimonials[currentTestimonial].image}
+                            alt={testimonials[currentTestimonial].name}
+                            className="w-full h-full rounded-full object-cover shadow-lg"
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <Quote className="text-orange-200 mb-4 mx-auto md:mx-0" size={40} fill="currentColor" />
-                      <p className="text-xl font-medium text-gray-800 mb-4 italic">"{item.quote}"</p>
+                    <div className="relative z-10">
+                      <Quote className="text-orange-500 mb-6 mx-auto md:mx-0 w-8 h-8" fill="currentColor" />
+                      <p className="text-xl md:text-2xl font-medium text-gray-800 mb-8 italic leading-relaxed">
+                        "{testimonials[currentTestimonial].quote}"
+                      </p>
                       <div>
-                        <h4 className="font-bold text-gray-900">{item.name}</h4>
-                        <span className="text-sm text-gray-500 uppercase tracking-wide">{item.role}</span>
+                        <h4 className="text-2xl font-bold text-gray-900 mb-1">{testimonials[currentTestimonial].name}</h4>
+                        <span className="text-sm text-orange-600 font-bold uppercase tracking-wide bg-orange-50 px-3 py-1 rounded-full">
+                              {testimonials[currentTestimonial].role}
+                           </span>
                       </div>
                     </div>
                   </Card>
-              ))}
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Navigation Controls */}
+              <div className="flex justify-center items-center gap-4 mt-8">
+                <button
+                    onClick={prevTestimonial}
+                    className="w-12 h-12 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-orange-600 hover:text-white hover:border-orange-600 transition-all shadow-sm"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <div className="flex gap-2">
+                  {testimonials.map((_, idx) => (
+                      <button
+                          key={idx}
+                          onClick={() => setCurrentTestimonial(idx)}
+                          className={`h-2 rounded-full transition-all ${idx === currentTestimonial ? 'w-8 bg-orange-600' : 'w-2 bg-gray-300 hover:bg-gray-400'}`}
+                      />
+                  ))}
+                </div>
+                <button
+                    onClick={nextTestimonial}
+                    className="w-12 h-12 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-orange-600 hover:text-white hover:border-orange-600 transition-all shadow-sm"
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </div>
+
+              {/* Share Your Story Button */}
+              <div className="mt-12 text-center">
+                <p className="text-gray-500 mb-4">Has God done something amazing in your life?</p>
+                <a href="/testimonies/submit">
+                  <Button variant="secondary" className="mx-auto !border-orange-200 text-orange-600 hover:!bg-orange-50 shadow-md">
+                    <PenTool size={16} /> Share Your Story
+                  </Button>
+                </a>
+              </div>
             </div>
           </div>
         </section>
@@ -461,7 +538,7 @@ export default function HomePage() {
           <div className="container mx-auto px-6">
             <SectionTitle title="Life At Reach" subtitle="Gallery" />
 
-            <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
+            <div className="columns-2 md:columns-2 lg:columns-3 gap-6 space-y-6">
               {galleryImages.map((img, idx) => (
                   <motion.div
                       key={idx}

@@ -3,23 +3,89 @@
 import React, { useState, useEffect } from 'react';
 import {
     ArrowLeft, Download, ShoppingBag, Star, BookOpen,
-    CheckCircle, Lock, Loader2, Smartphone, CreditCard, X
+    CheckCircle, Lock, Loader2, Smartphone, CreditCard, X, User, ArrowRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// --- Mock Book Data ---
-const bookData = {
-    id: 1,
-    title: "Purpose Driven Life",
-    author: "Rick Warren",
-    price: 250.00,
-    category: "Spiritual Growth",
-    rating: 4.8,
-    reviews: 124,
-    pages: 368,
-    language: "English",
-    description: "You are not an accident. Even before the universe was created, God had you in mind, and he planned you for his purposes. These purposes will extend far beyond the few years you will spend on earth. You were made by God and for God, and until you understand that, life will never make sense.",
-    image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=800"
+// --- Internal Mock Data & API ---
+
+const mockBooks = [
+    {
+        id: 1,
+        title: "Purpose Driven Life",
+        author: "Rick Warren",
+        price: 250.00,
+        category: "Spiritual Growth",
+        rating: 4.8,
+        pages: 368,
+        language: "English",
+        description: "You are not an accident. Even before the universe was created, God had you in mind, and he planned you for his purposes. These purposes will extend far beyond the few years you will spend on earth. You were made by God and for God, and until you understand that, life will never make sense.",
+        image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=800"
+    },
+    {
+        id: 2,
+        title: "Mere Christianity",
+        author: "C.S. Lewis",
+        price: 180.00,
+        category: "Apologetics",
+        rating: 4.9,
+        pages: 227,
+        language: "English",
+        description: "In the classic Mere Christianity, C.S. Lewis, the most important writer of the 20th century, explores the common ground upon which all of those of Christian faith stand together.",
+        image: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80&w=800"
+    },
+    {
+        id: 3,
+        title: "The Meaning of Marriage",
+        author: "Timothy Keller",
+        price: 300.00,
+        category: "Relationships",
+        rating: 4.7,
+        pages: 330,
+        language: "English",
+        description: "Based on the acclaimed sermon series by New York Times bestselling author Timothy Keller, this book shows everyone—Christians, skeptics, singles, longtime married couples—the vision of what marriage should be.",
+        image: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&q=80&w=800"
+    },
+    {
+        id: 4,
+        title: "Crazy Love",
+        author: "Francis Chan",
+        price: 220.00,
+        category: "Christian Living",
+        rating: 4.6,
+        pages: 205,
+        language: "English",
+        description: "God is love. Crazy, relentless, all-powerful love. Have you ever wondered if we're missing it? It's crazy, if you think about it. The God of the universe—the Creator of nitrogen and pine needles, galaxies and E-minor—loves us with a radical, unconditional, self-sacrificing love.",
+        image: "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=800"
+    },
+    {
+        id: 5,
+        title: "The Case for Christ",
+        author: "Lee Strobel",
+        price: 275.00,
+        category: "Apologetics",
+        rating: 4.8,
+        pages: 300,
+        language: "English",
+        description: "A Seasoned Journalist Chases Down the Biggest Story in History. Retracing his own spiritual journey from atheism to faith, Lee Strobel, former legal editor of the Chicago Tribune, cross-examines a dozen experts with doctorates from schools like Cambridge, Princeton, and Brandeis.",
+        image: "https://images.unsplash.com/photo-1491841550275-ad7854e35ca6?auto=format&fit=crop&q=80&w=800"
+    },
+    {
+        id: 6,
+        title: "Fervent",
+        author: "Priscilla Shirer",
+        price: 210.00,
+        category: "Prayer",
+        rating: 4.9,
+        pages: 189,
+        language: "English",
+        description: "You have an enemy . . . and he’s dead set on destroying all you hold dear and keeping you from experiencing abundant life in Christ. What’s more, his approach to disrupting your life and discrediting your faith isn’t general or generic, not a one-size-fits-all. It’s specific.",
+        image: "https://images.unsplash.com/photo-1524985069026-dd778a71c7b4?auto=format&fit=crop&q=80&w=800"
+    },
+];
+
+const api = {
+    getBook: (id) => Promise.resolve(mockBooks.find(b => b.id === parseInt(id)))
 };
 
 // --- Internal Components ---
@@ -40,8 +106,17 @@ const Button = ({ children, variant = 'primary', className = '', onClick, disabl
 
 // --- Payment Modal Component ---
 const PaymentModal = ({ isOpen, onClose, item, onSuccess }) => {
-    const [step, setStep] = useState('method'); // method, form, processing, success
+    const [step, setStep] = useState('details'); // details, method, form, processing, success
     const [method, setMethod] = useState(null); // mobile_money, visa
+    const [formData, setFormData] = useState({
+        name: '',
+        email: ''
+    });
+
+    const handleDetailsSubmit = (e) => {
+        e.preventDefault();
+        setStep('method');
+    };
 
     const handlePay = (e) => {
         e.preventDefault();
@@ -54,8 +129,9 @@ const PaymentModal = ({ isOpen, onClose, item, onSuccess }) => {
     };
 
     const reset = () => {
-        setStep('method');
+        setStep('details');
         setMethod(null);
+        setFormData({ name: '', email: '' });
         onClose();
     };
 
@@ -86,10 +162,56 @@ const PaymentModal = ({ isOpen, onClose, item, onSuccess }) => {
                     </div>
 
                     <div className="p-8">
-                        {/* Step 1: Select Method */}
+
+                        {/* Step 1: Personal Details */}
+                        {step === 'details' && (
+                            <form onSubmit={handleDetailsSubmit} className="space-y-5">
+                                <div className="text-center mb-6">
+                                    <div className="w-16 h-16 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <User size={32} />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-gray-900">Your Info</h3>
+                                    <p className="text-gray-500 text-sm">Where should we send your receipt?</p>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-2">Full Name</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({...formData, name: e.target.value})}
+                                        placeholder="Jane Doe"
+                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-2">Email Address</label>
+                                    <input
+                                        type="email"
+                                        required
+                                        value={formData.email}
+                                        onChange={(e) => setFormData({...formData, email: e.target.value})}
+                                        placeholder="jane@example.com"
+                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                                    />
+                                </div>
+
+                                <Button className="w-full mt-4">
+                                    Continue to Payment <ArrowRight size={18} />
+                                </Button>
+                            </form>
+                        )}
+
+                        {/* Step 2: Select Method */}
                         {step === 'method' && (
                             <div className="space-y-4">
-                                <p className="font-bold text-gray-900 mb-4">Select Payment Method</p>
+                                <div className="flex items-center justify-between mb-4">
+                                    <p className="font-bold text-gray-900">Select Payment Method</p>
+                                    <button onClick={() => setStep('details')} className="text-xs font-bold text-gray-400 hover:text-orange-600 flex items-center gap-1">
+                                        <ArrowLeft size={12}/> Edit Details
+                                    </button>
+                                </div>
 
                                 <button
                                     onClick={() => { setMethod('mobile_money'); setStep('form'); }}
@@ -119,7 +241,7 @@ const PaymentModal = ({ isOpen, onClose, item, onSuccess }) => {
                             </div>
                         )}
 
-                        {/* Step 2: Input Details */}
+                        {/* Step 3: Input Payment Details */}
                         {step === 'form' && (
                             <form onSubmit={handlePay} className="space-y-5">
                                 <div className="flex items-center justify-between mb-2">
@@ -169,7 +291,7 @@ const PaymentModal = ({ isOpen, onClose, item, onSuccess }) => {
                             </form>
                         )}
 
-                        {/* Step 3: Processing */}
+                        {/* Step 4: Processing */}
                         {step === 'processing' && (
                             <div className="text-center py-10">
                                 <div className="relative w-20 h-20 mx-auto mb-6">
@@ -183,7 +305,7 @@ const PaymentModal = ({ isOpen, onClose, item, onSuccess }) => {
                             </div>
                         )}
 
-                        {/* Step 4: Success */}
+                        {/* Step 5: Success */}
                         {step === 'success' && (
                             <div className="text-center py-6">
                                 <motion.div
@@ -194,7 +316,7 @@ const PaymentModal = ({ isOpen, onClose, item, onSuccess }) => {
                                     <CheckCircle size={48} />
                                 </motion.div>
                                 <h3 className="text-2xl font-black text-gray-900 mb-2">Payment Successful!</h3>
-                                <p className="text-gray-500 mb-8">You now have full access to this book.</p>
+                                <p className="text-gray-500 mb-8">Receipt sent to {formData.email}</p>
                                 <Button onClick={reset} className="w-full bg-gray-900 hover:bg-gray-800">
                                     Access My Book
                                 </Button>
@@ -210,11 +332,39 @@ const PaymentModal = ({ isOpen, onClose, item, onSuccess }) => {
 // --- Main Page Component ---
 
 export default function BookDetailPage({ params }) {
+    const [bookData, setBookData] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [hasPurchased, setHasPurchased] = useState(false);
+    const [loading, setLoading] = useState(true);
 
-    // In a real app, you would fetch book data using params.id
-    // const { id } = params;
+    useEffect(() => {
+        // Fallback for ID extraction in preview environment
+        const id = typeof window !== 'undefined' ? window.location.pathname.split('/').pop() : 1;
+        const bookId = id === 'library' ? 1 : id;
+
+        setLoading(true);
+        api.getBook(bookId).then(book => {
+            setBookData(book || null);
+            setLoading(false);
+        });
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-white">
+                <Loader2 size={48} className="text-orange-600 animate-spin" />
+            </div>
+        );
+    }
+
+    if (!bookData) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-white pt-32">
+                <h2 className="text-2xl font-bold mb-4">Book Not Found</h2>
+                <a href="/library" className="text-orange-600 font-bold hover:underline">Return to Library</a>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-white pt-32 pb-24">
@@ -276,7 +426,7 @@ export default function BookDetailPage({ params }) {
 
                         <div className="flex items-end gap-4 mb-8 pb-8 border-b border-gray-100">
                             <h2 className="text-4xl font-black text-orange-600">ZMW {bookData.price.toFixed(2)}</h2>
-                            <span className="text-gray-400 mb-2 line-through font-medium">ZMW 350.00</span>
+                            <span className="text-gray-400 mb-2 line-through font-medium">ZMW {(bookData.price * 1.2).toFixed(2)}</span>
                         </div>
 
                         <div className="mb-10">
@@ -317,16 +467,17 @@ export default function BookDetailPage({ params }) {
                 </div>
             </div>
 
-            {/* Payment Modal */}
-            <PaymentModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                item={bookData}
-                onSuccess={() => {
-                    setHasPurchased(true);
-                    setIsModalOpen(false);
-                }}
-            />
+            {bookData && (
+                <PaymentModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    item={bookData}
+                    onSuccess={() => {
+                        setHasPurchased(true);
+                        setIsModalOpen(false);
+                    }}
+                />
+            )}
         </div>
     );
 }
