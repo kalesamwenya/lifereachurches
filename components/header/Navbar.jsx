@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X, Heart, ChevronDown, Mic, BookOpen, PlayCircle, Hand } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from "next/image";
 
 const usePathname = () => {
     const [pathname, setPathname] = useState('/');
@@ -51,9 +52,15 @@ export default function Navbar() {
     return (
         <nav className={`fixed w-full z-[9999] transition-all duration-500 ${isScrolled ? 'bg-white shadow-lg py-3' : 'bg-transparent py-6'}`}>
             <div className="container mx-auto px-6 flex justify-between items-center">
+                {/*Logo*/}
                 <a href="/" className={`text-2xl font-black cursor-pointer flex items-center gap-2 tracking-tight ${isScrolled ? 'text-gray-900' : 'text-white'}`}>
-                    <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center text-white shadow-lg">
-                        <Heart size={20} fill="currentColor" />
+                    <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center text-white shadow-lg relative">
+                        <Image
+                            src={`/logo.png`}
+                            fill={true}
+                            class={`w-5 h-5`}
+                            alt={`life reach church logo`}
+                        />
                     </div>
                     Life Reach Church
                 </a>
