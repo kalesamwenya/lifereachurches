@@ -1,17 +1,35 @@
 'use client';
 
-import React from 'react';
+import React, {useState} from 'react';
 import { Facebook, Instagram, Youtube, ChevronRight, Clock, MapPin, Phone, Heart, Mic, BookOpen, Mail } from 'lucide-react';
+import Image from "next/image";
+import {usePathname} from "next/navigation";
 
 export default function Footer() {
+    const [isOpen, setIsOpen] = useState(false);
+    const [isScrolled, setIsScrolled] = useState(false);
+
+    const pathname = usePathname();
+    const transparentPages = ['/', '/about', '/events', '/podcast'];
+    const isTransparentPage = transparentPages.includes(pathname);
+
+    // Update: Navbar becomes solid if scrolled, OR not a transparent page, OR if the menu is open
+    // This ensures text/buttons are always visible (dark) when the white mobile menu is active.
+    const isSolid = isScrolled || !isTransparentPage || isOpen;
     return (
         <footer className="bg-gray-950 text-gray-300 pt-24 pb-12">
             <div className="container mx-auto px-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-20">
                     <div>
-                        <div className="flex items-center gap-3 text-white font-bold text-2xl mb-8">
-                            <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center text-white">
-                                <Heart size={20} fill="currentColor" />
+                        {/*Logo*/}
+                        <div className={`text-2xl font-black cursor-pointer flex items-center gap-2 tracking-tight ${isSolid ? 'text-gray-900' : 'text-white'}`}>
+                            <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center text-white shadow-lg relative">
+                                <Image
+                                    src={`/logo.png`}
+                                    fill={true}
+                                    className={`w-5 h-5 object-contain`}
+                                    alt={`life reach church logo`}
+                                />
                             </div>
                             Life Reach Church
                         </div>

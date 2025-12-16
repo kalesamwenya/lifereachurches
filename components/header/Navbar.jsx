@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Menu, X, Heart, ChevronDown, Mic, BookOpen, PlayCircle, Hand } from 'lucide-react';
+import { Menu, X, ChevronDown, Mic, BookOpen, PlayCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from "next/image";
 
@@ -19,6 +19,8 @@ const Button = ({ children, variant = 'primary', className = '', onClick }) => {
         primary: "bg-orange-600 text-white hover:bg-orange-700 shadow-lg hover:shadow-orange-500/30",
         secondary: "bg-white text-gray-900 hover:bg-gray-50 border border-gray-200 shadow-sm",
         outline: "bg-transparent border-2 border-white text-white hover:bg-white hover:text-gray-900",
+        // Added a minimal variant for the close button inside the menu
+        ghost: "bg-gray-100 text-gray-900 hover:bg-gray-200",
     };
     return <button onClick={onClick} className={`${baseStyle} ${variants[variant]} ${className}`}>{children}</button>;
 };
@@ -30,6 +32,13 @@ export default function Navbar() {
     const [mediaDropdown, setMediaDropdown] = useState(false);
     const pathname = usePathname();
 
+    const transparentPages = ['/', '/about', '/events', '/podcast'];
+    const isTransparentPage = transparentPages.includes(pathname);
+
+    // Update: Navbar becomes solid if scrolled, OR not a transparent page, OR if the menu is open
+    // This ensures text/buttons are always visible (dark) when the white mobile menu is active.
+    const isSolid = isScrolled || !isTransparentPage || isOpen;
+
     useEffect(() => {
         const handleScroll = () => setIsScrolled(window.scrollY > 50);
         window.addEventListener('scroll', handleScroll);
@@ -39,7 +48,6 @@ export default function Navbar() {
     const departments = [
         { name: 'Ministries', path: '/ministries' },
         { name: 'Book Library', path: '/library' },
-        // Added Volunteer Link
         { name: 'Volunteer', path: '/volunteer' },
     ];
 
@@ -50,15 +58,15 @@ export default function Navbar() {
     ];
 
     return (
-        <nav className={`fixed w-full z-[9999] transition-all duration-500 ${isScrolled ? 'bg-white shadow-lg py-3' : 'bg-transparent py-6'}`}>
+        <nav className={`fixed w-full z-[9999] transition-all duration-500 ${isSolid ? 'bg-white shadow-lg py-3' : 'bg-transparent py-6'}`}>
             <div className="container mx-auto px-6 flex justify-between items-center">
                 {/*Logo*/}
-                <a href="/" className={`text-2xl font-black cursor-pointer flex items-center gap-2 tracking-tight ${isScrolled ? 'text-gray-900' : 'text-white'}`}>
+                <a href="/" className={`text-2xl font-black cursor-pointer flex items-center gap-2 tracking-tight ${isSolid ? 'text-gray-900' : 'text-white'}`}>
                     <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center text-white shadow-lg relative">
                         <Image
                             src={`/logo.png`}
                             fill={true}
-                            class={`w-5 h-5`}
+                            className={`w-5 h-5 object-contain`}
                             alt={`life reach church logo`}
                         />
                     </div>
@@ -66,11 +74,11 @@ export default function Navbar() {
                 </a>
 
                 <div className="hidden lg:flex items-center gap-6">
-                    <a href="/" className={`font-semibold text-sm uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/' ? 'text-orange-500' : (isScrolled ? 'text-gray-600' : 'text-gray-200')}`}>Home</a>
-                    <a href="/about" className={`font-semibold text-sm uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/about' ? 'text-orange-500' : (isScrolled ? 'text-gray-600' : 'text-gray-200')}`}>About</a>
+                    <a href="/" className={`font-semibold text-sm uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/' ? 'text-orange-500' : (isSolid ? 'text-gray-600' : 'text-gray-200')}`}>Home</a>
+                    <a href="/about" className={`font-semibold text-sm uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/about' ? 'text-orange-500' : (isSolid ? 'text-gray-600' : 'text-gray-200')}`}>About</a>
 
                     <div className="relative group" onMouseEnter={() => setMediaDropdown(true)} onMouseLeave={() => setMediaDropdown(false)}>
-                        <button className={`font-semibold text-sm uppercase tracking-wide transition-colors flex items-center gap-1 hover:text-orange-500 ${media.some(m => pathname.includes(m.path)) ? 'text-orange-500' : (isScrolled ? 'text-gray-600' : 'text-gray-200')}`}>
+                        <button className={`font-semibold text-sm uppercase tracking-wide transition-colors flex items-center gap-1 hover:text-orange-500 ${media.some(m => pathname.includes(m.path)) ? 'text-orange-500' : (isSolid ? 'text-gray-600' : 'text-gray-200')}`}>
                             Media <ChevronDown size={14} />
                         </button>
                         <AnimatePresence>
@@ -87,7 +95,7 @@ export default function Navbar() {
                     </div>
 
                     <div className="relative group" onMouseEnter={() => setDeptDropdown(true)} onMouseLeave={() => setDeptDropdown(false)}>
-                        <button className={`font-semibold text-sm uppercase tracking-wide transition-colors flex items-center gap-1 hover:text-orange-500 ${departments.some(d => pathname.includes(d.path)) ? 'text-orange-500' : (isScrolled ? 'text-gray-600' : 'text-gray-200')}`}>
+                        <button className={`font-semibold text-sm uppercase tracking-wide transition-colors flex items-center gap-1 hover:text-orange-500 ${departments.some(d => pathname.includes(d.path)) ? 'text-orange-500' : (isSolid ? 'text-gray-600' : 'text-gray-200')}`}>
                             Connect <ChevronDown size={14} />
                         </button>
                         <AnimatePresence>
@@ -103,12 +111,12 @@ export default function Navbar() {
                         </AnimatePresence>
                     </div>
 
-                    <a href="/events" className={`font-semibold text-sm uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/events' ? 'text-orange-500' : (isScrolled ? 'text-gray-600' : 'text-gray-200')}`}>Events</a>
-                    <a href="/contact" className={`font-semibold text-sm uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/contact' ? 'text-orange-500' : (isScrolled ? 'text-gray-600' : 'text-gray-200')}`}>Contact</a>
+                    <a href="/events" className={`font-semibold text-sm uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/events' ? 'text-orange-500' : (isSolid ? 'text-gray-600' : 'text-gray-200')}`}>Events</a>
+                    <a href="/contact" className={`font-semibold text-sm uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/contact' ? 'text-orange-500' : (isSolid ? 'text-gray-600' : 'text-gray-200')}`}>Contact</a>
 
                     <div className="flex items-center gap-3 ml-2">
                         <a href="/plan-visit">
-                            <Button variant={isScrolled ? 'secondary' : 'outline'} className={`py-2 px-4 text-xs`}>Plan Visit</Button>
+                            <Button variant={isSolid ? 'secondary' : 'outline'} className={`py-2 px-4 text-xs`}>Plan Visit</Button>
                         </a>
                         <a href="/give">
                             <Button variant="primary" className="py-2 px-6 text-xs shadow-none">Give</Button>
@@ -116,7 +124,8 @@ export default function Navbar() {
                     </div>
                 </div>
 
-                <button className={`lg:hidden ${isScrolled ? 'text-gray-900' : 'text-white'}`} onClick={() => setIsOpen(!isOpen)}>
+                {/* Main Toggle Button: Swaps between Menu and X */}
+                <button className={`lg:hidden ${isSolid ? 'text-gray-900' : 'text-white'}`} onClick={() => setIsOpen(!isOpen)}>
                     {isOpen ? <X size={32} /> : <Menu size={32} />}
                 </button>
             </div>
@@ -125,6 +134,14 @@ export default function Navbar() {
                 {isOpen && (
                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: '100vh' }} exit={{ opacity: 0, height: 0 }} className="lg:hidden absolute top-0 left-0 w-full bg-white z-40 overflow-y-auto pt-24 pb-12">
                         <div className="container mx-auto px-6 flex flex-col gap-6">
+
+                            {/* Added explicit internal Close Button */}
+                            <div className="flex justify-end w-full pb-2">
+                                <Button variant="ghost" onClick={() => setIsOpen(false)} className="!px-4 !py-2 text-sm">
+                                    Close Menu <X size={16} />
+                                </Button>
+                            </div>
+
                             <a href="/" className="text-2xl font-bold text-gray-900 border-b border-gray-100 pb-4">Home</a>
                             <a href="/about" className="text-2xl font-bold text-gray-900 border-b border-gray-100 pb-4">About</a>
 
