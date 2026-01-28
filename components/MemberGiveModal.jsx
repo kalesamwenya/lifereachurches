@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -19,7 +19,7 @@ const GIVING_TYPES = [
     { id: 'missions', label: 'Missions', icon: <Globe size={20} />, color: 'bg-purple-100 text-purple-600' },
 ];
 
-export default function MemberGiveModal({ isOpen, onClose, user }) {
+function MemberGiveModalContent({ isOpen, onClose, user }) {
     const searchParams = useSearchParams();
     const [step, setStep] = useState(2); // Start at step 2 since step 1 is prefilled
     const [isLoading, setIsLoading] = useState(false);
@@ -276,3 +276,19 @@ export default function MemberGiveModal({ isOpen, onClose, user }) {
     );
 }
 
+export default function MemberGiveModal({ isOpen, onClose, user }) {
+    if (!isOpen) return null;
+    
+    return (
+        <Suspense fallback={
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+                <div className="bg-white rounded-3xl p-12 text-center">
+                    <Loader2 size={48} className="mx-auto text-orange-600 animate-spin mb-4" />
+                    <p className="text-gray-600">Loading...</p>
+                </div>
+            </div>
+        }>
+            <MemberGiveModalContent isOpen={isOpen} onClose={onClose} user={user} />
+        </Suspense>
+    );
+}
