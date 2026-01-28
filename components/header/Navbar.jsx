@@ -1,9 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Menu, X, ChevronDown, Mic, BookOpen, PlayCircle } from 'lucide-react';
+import { Menu, X, ChevronDown, Mic, BookOpen, PlayCircle, User, LogOut, ImageIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from "next/image";
+import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
 
 const usePathname = () => {
     const [pathname, setPathname] = useState('/');
@@ -31,8 +33,15 @@ export default function Navbar() {
     const [deptDropdown, setDeptDropdown] = useState(false);
     const [mediaDropdown, setMediaDropdown] = useState(false);
     const pathname = usePathname();
+    const { user, isAuthenticated, logout } = useAuth();
+    const router = useRouter();
 
-    const transparentPages = ['/', '/about', '/events', '/podcast'];
+    const handleLogout = () => {
+        logout();
+        router.push('/auth');
+    };
+
+    const transparentPages = ['/', '/about', '/events', '/podcast', '/live'];
     const isTransparentPage = transparentPages.includes(pathname);
 
     // Update: Navbar becomes solid if scrolled, OR not a transparent page, OR if the menu is open
@@ -55,6 +64,7 @@ export default function Navbar() {
         { name: 'Sermons', path: '/sermons', icon: <PlayCircle size={14} /> },
         { name: 'Podcast', path: '/podcast', icon: <Mic size={14} /> },
         { name: 'Blog', path: '/blog', icon: <BookOpen size={14} /> },
+        { name: 'Gallery', path: '/gallery', icon: <ImageIcon size={14} /> },
     ];
 
     return (
@@ -112,6 +122,7 @@ export default function Navbar() {
                     </div>
 
                     <a href="/events" className={`font-semibold text-sm uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/events' ? 'text-orange-500' : (isSolid ? 'text-gray-600' : 'text-gray-200')}`}>Events</a>
+                    <a href="/live" className={`font-semibold text-sm uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/live' ? 'text-orange-500' : (isSolid ? 'text-gray-600' : 'text-gray-200')}`}>Live</a>
                     <a href="/contact" className={`font-semibold text-sm uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/contact' ? 'text-orange-500' : (isSolid ? 'text-gray-600' : 'text-gray-200')}`}>Contact</a>
 
                     <div className="flex items-center gap-3 ml-2">
@@ -121,6 +132,40 @@ export default function Navbar() {
                         <a href="/give">
                             <Button variant="primary" className="py-2 px-6 text-xs shadow-none">Give</Button>
                         </a>
+                        
+                        {/* Auth Section */}
+                        {isAuthenticated && user ? (
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => router.push('/member')}
+                                    className="flex items-center gap-2 p-1 hover:bg-gray-100 rounded-full transition-all"
+                                    title="Go to Member Portal"
+                                >
+                                    <img 
+                                        src={user.avatar_url || user.profileImage || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100"} 
+                                        alt={`${user.first_name || user.firstName || ''} ${user.last_name || user.lastName || ''}`}
+                                        className="w-10 h-10 rounded-full object-cover border-2 border-orange-600"
+                                    />
+                                </button>
+                                <button
+                                    onClick={handleLogout}
+                                    className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-red-600 hover:bg-red-50 rounded-full transition-all"
+                                    title="Logout"
+                                >
+                                    <LogOut size={16} />
+                                    <span className="hidden xl:inline">Logout</span>
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-2">
+                                <a href="/auth">
+                                    <Button variant={isSolid ? 'secondary' : 'outline'} className="py-2 px-4 text-xs">
+                                        <User size={16} />
+                                        Login
+                                    </Button>
+                                </a>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -147,6 +192,48 @@ export default function Navbar() {
 
                             <div className="border-b border-gray-100 pb-4">
                                 <p className="text-xs font-bold text-gray-400 uppercase mb-4">Media</p>
+
+                            {/* Mobile Auth Section */}
+                            {isAuthenticated && user ? (
+                                <div className="mt-6 pt-6 border-t border-gray-200 space-y-3">
+                                    <button
+                                        onClick={() => {
+                                            setIsOpen(false);
+                                            router.push('/member');
+                                        }}
+                                        className="flex items-center gap-4 w-full p-4 bg-orange-50 rounded-2xl hover:bg-orange-100 transition-all"
+                                    >
+                                        <img 
+                                            src={user.avatar_url || user.profileImage || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100"} 
+                                            alt={`${user.first_name || user.firstName || ''} ${user.last_name || user.lastName || ''}`}
+                                            className="w-12 h-12 rounded-full object-cover border-2 border-orange-600"
+                                        />
+                                        <div className="text-left">
+                                            <p className="font-bold text-gray-900">{user.first_name || user.firstName} {user.last_name || user.lastName}</p>
+                                            <p className="text-sm text-orange-600">Go to Member Portal</p>
+                                        </div>
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setIsOpen(false);
+                                            handleLogout();
+                                        }}
+                                        className="flex items-center justify-center gap-2 w-full p-4 bg-red-50 rounded-2xl hover:bg-red-100 transition-all text-red-600 font-bold"
+                                    >
+                                        <LogOut size={20} />
+                                        Logout
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="mt-6 pt-6 border-t border-gray-200">
+                                    <a href="/auth">
+                                        <Button className="w-full justify-center">
+                                            <User size={20} />
+                                            Login / Sign Up
+                                        </Button>
+                                    </a>
+                                </div>
+                            )}
                                 <div className="flex flex-col gap-4 pl-4">
                                     <a href="/sermons" className="text-lg font-medium text-gray-700">Sermons</a>
                                     <a href="/podcast" className="text-lg font-medium text-gray-700">Podcast</a>

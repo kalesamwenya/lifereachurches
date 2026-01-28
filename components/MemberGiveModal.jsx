@@ -19,22 +19,35 @@ const GIVING_TYPES = [
     { id: 'missions', label: 'Missions', icon: <Globe size={20} />, color: 'bg-purple-100 text-purple-600' },
 ];
 
-export default function GiveModal({ isOpen, onClose }) {
+export default function MemberGiveModal({ isOpen, onClose, user }) {
     const searchParams = useSearchParams();
-    const [step, setStep] = useState(1);
+    const [step, setStep] = useState(2); // Start at step 2 since step 1 is prefilled
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [details, setDetails] = useState(null);
 
+    // Prefill member details
     const [formData, setFormData] = useState({
-        name: '',
-        contact: '',
+        name: user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : '',
+        contact: user?.email || user?.phone || '',
         category: '',
         amount: '',
         method: 'mobile_money',
-        momo_number: '', // Captured for the STK push/forwarding
-        network: 'MTN'   // Default network for Zambia
+        momo_number: user?.phone || '',
+        network: 'MTN'
     });
+
+    // Update formData when user changes
+    useEffect(() => {
+        if (user) {
+            setFormData(prev => ({
+                ...prev,
+                name: `${user.first_name || ''} ${user.last_name || ''}`.trim(),
+                contact: user.email || user.phone || '',
+                momo_number: user.phone || ''
+            }));
+        }
+    }, [user]);
 
     // --- AUTO-VERIFY LOGIC ---
     useEffect(() => {
@@ -73,8 +86,8 @@ export default function GiveModal({ isOpen, onClose }) {
         setError(null);
 
         try {
-            // Forwarding all captured info to the backend
             const payload = {
+                member_id: user?.id,
                 name: formData.name,
                 contact: formData.contact,
                 category: formData.category,
@@ -100,7 +113,6 @@ export default function GiveModal({ isOpen, onClose }) {
         }
     };
 
-    const isStep1Valid = formData.name.length > 2 && formData.contact.length > 5;
     const isStep3Valid = formData.method === 'mobile_money'
         ? Number(formData.amount) > 0 && formData.momo_number.length >= 10
         : Number(formData.amount) > 0;
@@ -108,19 +120,22 @@ export default function GiveModal({ isOpen, onClose }) {
     const nextStep = () => setStep(prev => prev + 1);
     const prevStep = () => setStep(prev => prev - 1);
 
-    const handleStep1Submit = (e) => {
-        e.preventDefault();
-        if (isStep1Valid) nextStep();
-    };
-
     const handleCategorySelect = (categoryId) => {
         setFormData(prev => ({ ...prev, category: categoryId }));
         nextStep();
     };
 
     const reset = () => {
-        setStep(1);
-        setFormData({ name: '', contact: '', category: '', amount: '', method: 'mobile_money', momo_number: '', network: 'MTN' });
+        setStep(2);
+        setFormData({ 
+            name: user?.name || '',
+            contact: user?.email || user?.phone || '',
+            category: '', 
+            amount: '', 
+            method: 'mobile_money', 
+            momo_number: user?.phone || '', 
+            network: 'MTN' 
+        });
         setError(null);
         setDetails(null);
         onClose();
@@ -137,8 +152,8 @@ export default function GiveModal({ isOpen, onClose }) {
                         <div>
                             <h2 className="text-xl font-black text-gray-900 uppercase italic tracking-tighter">Give Online</h2>
                             <div className="flex gap-2 mt-2">
-                                {[1, 2, 3].map(i => (
-                                    <div key={i} className={`h-1.5 w-8 rounded-full transition-colors duration-300 ${step >= i ? 'bg-orange-500' : 'bg-gray-200'}`}></div>
+                                {[1, 2].map(i => (
+                                    <div key={i} className={`h-1.5 w-8 rounded-full transition-colors duration-300 ${step >= i + 1 ? 'bg-orange-500' : 'bg-gray-200'}`}></div>
                                 ))}
                             </div>
                         </div>
@@ -152,25 +167,6 @@ export default function GiveModal({ isOpen, onClose }) {
                             <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-xl flex items-center gap-2 text-sm font-bold animate-in fade-in">
                                 <AlertCircle size={18} /> {error}
                             </div>
-                        )}
-
-                        {step === 1 && (
-                            <form onSubmit={handleStep1Submit} className="space-y-6">
-                                <div className="text-center mb-8">
-                                    <div className="w-16 h-16 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4"><User size={32} /></div>
-                                    <h3 className="text-2xl font-bold text-gray-900 tracking-tight">Your Details</h3>
-                                    <p className="text-gray-500 text-sm">Let us know who is giving today.</p>
-                                </div>
-                                <div>
-                                    <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Full Name</label>
-                                    <input type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-orange-500 focus:outline-none bg-gray-50 font-medium" placeholder="John Doe" />
-                                </div>
-                                <div>
-                                    <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Email or Phone Number</label>
-                                    <input type="text" required value={formData.contact} onChange={(e) => setFormData({...formData, contact: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-orange-500 focus:outline-none bg-gray-50 font-medium" placeholder="john@example.com or 097..." />
-                                </div>
-                                <button type="submit" disabled={!isStep1Valid} className="w-full bg-gray-900 text-white font-bold py-4 rounded-xl hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 disabled:opacity-50">Next Step <ArrowRight size={18} /></button>
-                            </form>
                         )}
 
                         {step === 2 && (
@@ -187,7 +183,6 @@ export default function GiveModal({ isOpen, onClose }) {
                                         </button>
                                     ))}
                                 </div>
-                                <button onClick={prevStep} className="w-full text-gray-500 font-bold py-3 text-sm flex items-center justify-center gap-2 hover:text-gray-900"><ArrowLeft size={16} /> Back</button>
                             </div>
                         )}
 
@@ -196,6 +191,18 @@ export default function GiveModal({ isOpen, onClose }) {
                                 <div className="text-center mb-6">
                                     <h3 className="text-2xl font-bold text-gray-900 tracking-tight">Payment Details</h3>
                                     <p className="text-gray-500 text-sm">Secure offering for <span className="font-bold text-orange-600 capitalize">{GIVING_TYPES.find(t => t.id === formData.category)?.label}</span></p>
+                                </div>
+
+                                {/* Show prefilled info - disabled */}
+                                <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                                    <p className="text-xs font-bold uppercase text-blue-600 mb-2">Your Details</p>
+                                    <div className="space-y-2">
+                                        <div className="flex items-center gap-2">
+                                            <User size={14} className="text-blue-600" />
+                                            <span className="text-sm font-bold text-gray-900">{formData.name}</span>
+                                        </div>
+                                        <div className="text-sm text-gray-600">{formData.contact}</div>
+                                    </div>
                                 </div>
 
                                 <div className="bg-gray-100 p-1 rounded-xl flex mb-6">
@@ -268,3 +275,4 @@ export default function GiveModal({ isOpen, onClose }) {
         </AnimatePresence>
     );
 }
+

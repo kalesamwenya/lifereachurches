@@ -4,6 +4,8 @@ import React, {useState} from 'react';
 import { Facebook, Instagram, Youtube, ChevronRight, Clock, MapPin, Phone, Heart, Mic, BookOpen, Mail } from 'lucide-react';
 import Image from "next/image";
 import {usePathname} from "next/navigation";
+import {BsTiktok} from "react-icons/bs";
+import {MdEmail} from "react-icons/md";
 
 export default function Footer() {
     const [isOpen, setIsOpen] = useState(false);
@@ -37,7 +39,7 @@ export default function Footer() {
                             Reaching the lost, Raising disciples, and Releasing leaders. Join the movement.
                         </p>
                         <div className="flex gap-4">
-                            {[Facebook, Instagram, Youtube].map((Icon, i) => (
+                            {[Facebook, Instagram, Youtube,BsTiktok].map((Icon, i) => (
                                 <a key={i} href="#" className="w-12 h-12 rounded-full bg-gray-900 flex items-center justify-center hover:bg-orange-600 transition-colors group">
                                     <Icon size={20} className="group-hover:text-white transition-colors text-gray-400" />
                                 </a>
@@ -96,19 +98,28 @@ export default function Footer() {
                                 <div className="p-2 bg-gray-900 rounded-lg text-orange-500">
                                     <MapPin size={20} />
                                 </div>
-                                <span>123 Life Reach Blvd<br/>Springfield, ST 12345</span>
+                                <span>Zamise Theater Hall<br/>Kamwala, Lusaka</span>
                             </li>
                             <li className="flex items-center gap-4">
                                 <div className="p-2 bg-gray-900 rounded-lg text-orange-500">
                                     <Phone size={20} />
                                 </div>
-                                <span>(555) 123-4567</span>
+                                <span>(260) 762585742</span>
+                            </li>
+                            <li className="flex items-center gap-4">
+                                <div className="p-2 bg-gray-900 rounded-lg text-orange-500">
+                                    <MdEmail size={20} />
+                                </div>
+                                <span>lifereachchurch@gmail.com</span>
                             </li>
                             <li className="flex items-center gap-4">
                                 <div className="p-2 bg-gray-900 rounded-lg text-orange-500">
                                     <Clock size={20} />
                                 </div>
-                                <span>Sun: 9:00 AM & 11:00 AM</span>
+                               <div className="">
+                                   <div>Sun: 9:00 AM & 13:00 PM</div>
+                                   <div>Thur: 17:00 PM & 19:00 PM</div>
+                               </div>
                             </li>
                         </ul>
                     </div>
