@@ -1,5 +1,5 @@
 "use client"
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Lock, User, ArrowRight, AlertCircle, KeyRound, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import axios from 'axios';
 import { API_URL } from '@/lib/api-config';
 
-export default function AuthPage() {
+function AuthForm() {
     const searchParams = useSearchParams();
     const [mode, setMode] = useState('login'); // 'login' | 'register' | 'forgot' | 'reset' | 'verify'
     const [email, setEmail] = useState('');
@@ -379,5 +379,19 @@ export default function AuthPage() {
                 </div>
             </div>
         </div>
+    );
+}
+export default function AuthPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="w-16 h-16 border-4 border-orange-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                    <p className="mt-4 text-gray-600">Loading...</p>
+                </div>
+            </div>
+        }>
+            <AuthForm />
+        </Suspense>
     );
 }
