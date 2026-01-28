@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { Play, User, Calendar, ArrowRight } from 'lucide-react';
-import { Button, SectionTitle, Card } from '../../components/UIComponents';
-import { api } from '../../utils/mockData';
+import { Button, SectionTitle, Card } from '../../../components/UIComponents';
+import { api } from '../../../utils/mockData';
 
 export default function SermonsPage() {
     const [sermons, setSermons] = useState([]);
