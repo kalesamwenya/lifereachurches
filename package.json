@@ -6,9 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "analyze": "ANALYZE=true npm run build",
+    "audit:fix": "npm audit fix",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
     "axios": "^1.13.2",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.23.25",
@@ -22,16 +26,20 @@
     "qrcode": "^1.5.4",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
+    "react-hook-form": "^7.71.1",
     "react-hot-toast": "^2.6.0",
     "react-icons": "^5.5.0",
     "react-pdf": "^10.3.0",
-    "socket.io-client": "^4.8.3"
+    "socket.io-client": "^4.8.3",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^16.1.6",
     "@tailwindcss/postcss": "^4",
     "baseline-browser-mapping": "^2.9.19",
     "eslint": "^9",
     "eslint-config-next": "^16.0.10",
+    "sharp": "^0.34.5",
     "tailwindcss": "^4"
   }
 }
