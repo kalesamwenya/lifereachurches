@@ -5,6 +5,7 @@ import { Gift } from 'lucide-react';
 import { motion } from 'framer-motion';
 import GiveModal from '@/components/GiveModal';
 
+export const dynamic = 'force-dynamic';
 
 const Button = ({ children, className = "", onClick }) => (
     <button onClick={onClick} className={`px-8 py-4 rounded-full font-bold flex items-center justify-center gap-2 active:scale-95 bg-white text-gray-900 hover:bg-gray-100 ${className}`}>{children}</button>
