@@ -66,7 +66,7 @@ function AuthForm() {
                 if (result.success) {
                     router.push(callbackUrl);
                 } else {
-                    setError(result.error || 'Login failed');
+                    setError(result.error || result.message || 'Login failed');
                 }
             } else if (mode === 'register') {
                 // Split full name into first and last name

@@ -1,45 +1,50 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect } from 'react';
+import { useSession, signIn, signOut, getSession } from 'next-auth/react';
 import axios from 'axios';
 import { API_URL } from '@/lib/api-config';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
+    const { data: session, status } = useSession();
     const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
     const [token, setToken] = useState(null);
+    const loading = status === 'loading';
 
     useEffect(() => {
-        // Check for stored auth data
-        const storedToken = localStorage.getItem('auth_token');
-        const storedUser = localStorage.getItem('auth_user');
-
-        if (storedToken && storedUser) {
-            setToken(storedToken);
-            setUser(JSON.parse(storedUser));
+        if (session?.user) {
+            setUser(session.user);
+            setToken(session.user.accessToken || null);
+        } else {
+            setUser(null);
+            setToken(null);
         }
-        setLoading(false);
-    }, []);
+    }, [session]);
 
     const login = async (email, password) => {
         try {
-            const response = await axios.post(`${API_URL}/auth/login.php`, {
+            const result = await signIn('credentials', {
+                redirect: false,
                 email,
-                password
+                password,
             });
 
-            if (response.data.success) {
-                const { user, token } = response.data.data;
-                setUser(user);
-                setToken(token);
-                localStorage.setItem('auth_token', token);
-                localStorage.setItem('auth_user', JSON.stringify(user));
+            if (result?.ok) {
+                const updatedSession = await getSession();
+                if (updatedSession?.user) {
+                    setUser(updatedSession.user);
+                    setToken(updatedSession.user.accessToken || null);
+                }
                 return { success: true };
-            } else {
-                return { success: false, message: response.data.message };
             }
+
+            const errorMessage =
+                result?.error === 'CredentialsSignin'
+                    ? 'Invalid email or password'
+                    : result?.error || 'Login failed';
+            return { success: false, message: errorMessage };
         } catch (error) {
             console.error('Login error:', error);
             return {
@@ -68,22 +73,21 @@ export function AuthProvider({ children }) {
     };
 
     const logout = () => {
+        signOut({ redirect: false });
         setUser(null);
         setToken(null);
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('auth_user');
         return { success: true };
     };
 
     const updateUser = (updatedUser) => {
         setUser(updatedUser);
-        localStorage.setItem('auth_user', JSON.stringify(updatedUser));
     };
 
     const value = {
         user,
         token,
         loading,
+        isLoading: loading,
         login,
         register,
         logout,
