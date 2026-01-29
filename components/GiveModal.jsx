@@ -8,7 +8,6 @@ import {
     ArrowRight, ArrowLeft, Heart, Sprout, Globe, HandHeart,
     Coins, AlertCircle, Download
 } from 'lucide-react';
-import axios from 'axios';
 import { API_URL } from '@/lib/api-config';
 
 const GIVING_TYPES = [
@@ -48,15 +47,28 @@ function GiveModalContent({ isOpen, onClose }) {
         setStep(4);
         setIsLoading(true);
         try {
-            const res = await axios.get(`${API_URL}/giving/verify.php?transaction_id=${id}`);
-            if (res.data.status === 'success') {
-                setDetails(res.data.details);
+            const response = await fetch(`${API_URL}/giving/verify.php?transaction_id=${id}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                },
+            });
+            
+            if (!response.ok) {
+                throw new Error('Payment verification request failed');
+            }
+            
+            const data = await response.json();
+            
+            if (data.status === 'success') {
+                setDetails(data.details);
                 setStep(5);
             } else {
                 setError("Payment verification failed.");
                 setStep(3);
             }
         } catch (err) {
+            console.error('Payment verification error:', err);
             setError("Could not verify payment.");
             setStep(3);
         } finally {
@@ -84,8 +96,22 @@ function GiveModalContent({ isOpen, onClose }) {
                 network: formData.network
             };
 
-            const res = await axios.post(`${API_URL}/giving/initialize.php`, payload);
-            const paymentLink = res.data?.link;
+            const response = await fetch(`${API_URL}/giving/initialize.php`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify(payload),
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Payment initialization failed');
+            }
+            
+            const data = await response.json();
+            const paymentLink = data?.link;
 
             if (paymentLink && typeof paymentLink === 'string') {
                 window.location.href = paymentLink;
@@ -93,7 +119,8 @@ function GiveModalContent({ isOpen, onClose }) {
                 throw new Error("The server did not return a valid payment link.");
             }
         } catch (err) {
-            setError(err.response?.data?.message || "Failed to start payment process.");
+            console.error('Payment initialization error:', err);
+            setError(err.message || "Failed to start payment process.");
             setStep(3);
         } finally {
             setIsLoading(false);
