@@ -1,7 +1,8 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import axios from 'axios';
-import { API_URL } from '@/lib/api-config';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://content.lifereachchurch.org';
 
 export const authOptions = {
     providers: [

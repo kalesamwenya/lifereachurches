@@ -8,7 +8,8 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
-import { API_URL } from '@/lib/api-config';
+
+const API_URL = 'https://content.lifereachchurch.org';
 
 export default function BookReader({ book, isOpen, onClose, userId }) {
   // Reader Settings

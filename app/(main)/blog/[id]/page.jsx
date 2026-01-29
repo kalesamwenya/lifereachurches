@@ -10,7 +10,8 @@ import {
 } from 'lucide-react';
 import { motion, useScroll, useSpring } from 'framer-motion';
 import BlogComments from '@/components/BlogComments';
-import { API_URL } from '@/lib/api-config';
+
+const API_URL = 'https://content.lifereachchurch.org';
 
 export default function BlogPost() {
     const { id } = useParams();

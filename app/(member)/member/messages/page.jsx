@@ -4,7 +4,9 @@ import { useAuth } from '@/context/AuthContext';
 import io from 'socket.io-client';
 import axios from 'axios';
 import { Search, Send, Phone, Video, MoreVertical, Smile, Paperclip, MessageSquare, Users, Hash, ArrowLeft } from 'lucide-react';
-import { API_URL, SOCKET_URL } from '@/lib/api-config';
+
+const API_URL = 'https://content.lifereachchurch.org';
+const SOCKET_URL = 'http://localhost:4000';
 
 export default function MessagesPage() {
   const { user } = useAuth();

@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { Calendar, CheckCircle, Loader2, CheckCircle2, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { API_URL } from '@/lib/api-config';
+
+const API_URL = 'https://content.lifereachchurch.org';
 
 export default function PlanVisitPage() {
     const [isLoading, setIsLoading] = useState(false);

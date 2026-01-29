@@ -3,7 +3,8 @@ import QRCode from 'qrcode';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { FaWhatsapp } from 'react-icons/fa';
-import { API_URL } from '@/lib/api-config';
+
+const API_URL = 'https://content.lifereachchurch.org';
 
 async function loadImageToBase64(url) {
     return new Promise((resolve) => {

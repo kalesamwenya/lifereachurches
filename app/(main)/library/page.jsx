@@ -4,7 +4,8 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { BookOpen, Star, Search, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { API_URL } from '@/lib/api-config';
+
+const API_URL = 'https://content.lifereachchurch.org';
 
 // --- Local Components (Design Preserved) ---
 

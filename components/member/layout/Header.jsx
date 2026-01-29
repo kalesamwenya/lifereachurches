@@ -9,7 +9,8 @@ import NotificationDropdown from '@/components/NotificationDropdown';
 import Image from 'next/image';
 import axios from 'axios';
 import Link from 'next/link';
-import { API_URL } from '@/lib/api-config';
+
+const API_URL = 'https://content.lifereachchurch.org';
 
 const DropdownWrapper = ({ title, icon: Icon, children, isOpen, onClick, badge }) => (
   <div className="relative">

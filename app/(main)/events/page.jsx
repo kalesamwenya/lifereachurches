@@ -5,7 +5,8 @@ import { Calendar, Clock, MapPin, ArrowUpRight, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 import Link from 'next/link';
-import { API_URL } from '@/lib/api-config';
+
+const API_URL = 'https://content.lifereachchurch.org';
 
 // --- Design System Components (Preserved) ---
 

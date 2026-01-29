@@ -4,7 +4,8 @@ import { CreditCard, History, Download, Filter, Calendar, TrendingUp, DollarSign
 import { useAuth } from '@/context/AuthContext';
 import MemberGiveModal from '@/components/MemberGiveModal';
 import axios from 'axios';
-import { API_URL } from '@/lib/api-config';
+
+const API_URL = 'https://content.lifereachchurch.org';
 
 export default function Giving() {
   const { user } = useAuth();

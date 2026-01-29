@@ -5,7 +5,8 @@ import { Bell, Book, Calendar, Mic, FileText, CheckCircle, X } from 'lucide-reac
 import axios from 'axios';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
-import { API_URL } from '@/lib/api-config';
+
+const API_URL = 'https://content.lifereachchurch.org';
 
 export default function NotificationDropdown({ isOpen }) {
   const { user } = useAuth();

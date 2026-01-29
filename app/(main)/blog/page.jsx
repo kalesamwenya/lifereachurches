@@ -5,7 +5,8 @@ import axios from 'axios';
 import Head from 'next/head';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, User, ArrowRight, Search, Loader2, ChevronLeft, ChevronRight, Share2 } from 'lucide-react';
-import { API_URL } from '@/lib/api-config';
+
+const API_URL = 'https://content.lifereachchurch.org';
 
 export default function BlogPage() {
     const [posts, setPosts] = useState([]);

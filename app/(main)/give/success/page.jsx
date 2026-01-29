@@ -4,7 +4,8 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 import { CheckCircle2, Loader2, Download, Home } from 'lucide-react';
 import { generateGivingReceipt } from '@/utils/generateGivingReceipt';
-import { API_URL } from '@/lib/api-config';
+
+const API_URL = 'https://content.lifereachchurch.org';
 
 function SuccessContent() {
     const searchParams = useSearchParams();

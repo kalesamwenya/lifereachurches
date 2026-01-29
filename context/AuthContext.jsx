@@ -3,7 +3,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useSession, signIn, signOut, getSession } from 'next-auth/react';
 import axios from 'axios';
-import { API_URL } from '@/lib/api-config';
 
 const AuthContext = createContext(null);
 
@@ -56,7 +55,7 @@ export function AuthProvider({ children }) {
 
     const register = async (userData) => {
         try {
-            const response = await axios.post(`${API_URL}/auth/register.php`, userData);
+            const response = await axios.post('/api/auth/proxy-register', userData);
 
             if (response.data.success) {
                 return { success: true, data: response.data.data };

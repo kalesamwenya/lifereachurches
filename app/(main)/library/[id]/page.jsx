@@ -8,7 +8,8 @@ import {
     CheckCircle, Lock, Loader2, Smartphone, CreditCard, X, User, ArrowRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { API_URL } from '@/lib/api-config';
+
+const API_URL = 'https://content.lifereachchurch.org';
 
 // --- Internal Components (Design Strictly Preserved) ---
 

@@ -4,7 +4,8 @@ import { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import { Calendar, Image as ImageIcon, Search, SortAsc, ArrowRight, Camera } from 'lucide-react';
 import Link from 'next/link';
-import { API_URL } from '@/lib/api-config';
+
+const API_URL = 'https://content.lifereachchurch.org';
 
 // --- Sub-component: Gallery Card ---
 const GalleryCard = ({ gallery }) => (

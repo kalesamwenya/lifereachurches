@@ -4,7 +4,8 @@ import { Search, Filter, BookOpen, Clock, CheckCircle, Loader2 } from 'lucide-re
 import { useAuth } from '@/context/AuthContext';
 import BookReader from '@/components/BookReader';
 import axios from 'axios';
-import { API_URL } from '@/lib/api-config';
+
+const API_URL = 'https://content.lifereachchurch.org';
 
 export default function Books() {
   const { user } = useAuth();

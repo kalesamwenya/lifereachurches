@@ -5,7 +5,8 @@ import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Instagram, Loader2 } from 'lucide-react';
 import { SectionTitle } from '@/components/ui/LocalComponents';
-import { API_URL } from '@/lib/api-config';
+
+const API_URL = 'https://content.lifereachchurch.org';
 
 export default function GallerySnippet() {
     const [images, setImages] = useState([]);

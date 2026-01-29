@@ -6,7 +6,8 @@ import { Calendar, MapPin, Clock, Loader2, CheckCircle2, ArrowRight, Phone, Home
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
-import { API_URL } from '@/lib/api-config';
+
+const API_URL = 'https://content.lifereachchurch.org';
 
 export default function EventRegistration() {
     return (

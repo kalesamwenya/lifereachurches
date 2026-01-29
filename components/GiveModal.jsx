@@ -8,7 +8,8 @@ import {
     ArrowRight, ArrowLeft, Heart, Sprout, Globe, HandHeart,
     Coins, AlertCircle, Download
 } from 'lucide-react';
-import { API_URL } from '@/lib/api-config';
+
+const API_URL = 'https://content.lifereachchurch.org';
 
 const GIVING_TYPES = [
     { id: 'tithe', label: 'Tithe', icon: <Coins size={20} />, color: 'bg-blue-100 text-blue-600' },

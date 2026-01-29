@@ -8,7 +8,8 @@ import {
   Download, Share2, Link as LinkIcon, Facebook, Check, ArrowLeft, Camera, Heart 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { API_URL } from '@/lib/api-config';
+
+const API_URL = 'https://content.lifereachchurch.org';
 
 export default function GalleryPage() {
     const { id } = useParams();

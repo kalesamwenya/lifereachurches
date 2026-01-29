@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { formatDistanceToNow } from 'date-fns';
 import { MessageCircle, Heart, Reply, Send } from 'lucide-react';
-import { API_URL } from '@/lib/api-config';
+
+const API_URL = 'https://content.lifereachchurch.org';
 
 export default function BlogComments({ blogId }) {
   const { user, token, isAuthenticated } = useAuth();

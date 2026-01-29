@@ -2,7 +2,9 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import io from 'socket.io-client';
 import { useAuth } from './AuthContext';
-import { API_URL, SOCKET_URL } from '@/lib/api-config';
+
+const API_URL = 'https://content.lifereachchurch.org';
+const SOCKET_URL = 'http://localhost:4000';
 
 const ChatContext = createContext();
 

@@ -4,7 +4,8 @@ import { Star, MessageSquare, Check, Loader2, Heart, DollarSign, Calendar, Trend
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import { API_URL } from '@/lib/api-config';
+
+const API_URL = 'https://content.lifereachchurch.org';
 
 export default function HomePage() {
   const { user } = useAuth();

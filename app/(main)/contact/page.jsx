@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { Mail, Phone, MapPin, Send, MessageSquare, Loader2, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { API_URL } from '@/lib/api-config';
+
+const API_URL = 'https://content.lifereachchurch.org';
 
 export default function ContactPage() {
     const [activeTab, setActiveTab] = useState('general'); // general or prayer

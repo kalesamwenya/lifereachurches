@@ -4,7 +4,8 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Play, Users, Share2, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/UIComponents';
 import axios from 'axios';
-import { API_URL } from '@/lib/api-config';
+
+const API_URL = 'https://content.lifereachchurch.org';
 
 export default function LivePage() {
     const [activeStream, setActiveStream] = useState(null);

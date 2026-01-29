@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Lock, Bell, Shield, Globe, Eye, EyeOff, Smartphone, Mail, MessageSquare, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
-import { API_URL } from '@/lib/api-config';
+
+const API_URL = 'https://content.lifereachchurch.org';
 
 export default function Settings() {
   const { user } = useAuth();

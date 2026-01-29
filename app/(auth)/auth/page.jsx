@@ -5,7 +5,6 @@ import { Mail, Lock, User, ArrowRight, AlertCircle, KeyRound, CheckCircle } from
 import { useAuth } from '@/context/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import axios from 'axios';
-import { API_URL } from '@/lib/api-config';
 
 function AuthForm() {
     const searchParams = useSearchParams();
@@ -74,7 +73,7 @@ function AuthForm() {
                 const firstName = nameParts[0] || '';
                 const lastName = nameParts.slice(1).join(' ') || nameParts[0];
 
-                const response = await axios.post(`${API_URL}/auth/register.php`, {
+                const response = await axios.post('/api/auth/proxy-register', {
                     first_name: firstName,
                     last_name: lastName,
                     email: email,
@@ -88,7 +87,7 @@ function AuthForm() {
                     setError(response.data.message || 'Registration failed');
                 }
             } else if (mode === 'forgot') {
-                const response = await axios.post(`${API_URL}/auth/forgot_password.php`, {
+                const response = await axios.post('/api/auth/proxy-forgot', {
                     email: email
                 });
 
@@ -104,7 +103,7 @@ function AuthForm() {
                     return;
                 }
 
-                const response = await axios.post(`${API_URL}/auth/reset_password.php`, {
+                const response = await axios.post('/api/auth/proxy-reset', {
                     token: resetToken,
                     password: password
                 });
@@ -119,7 +118,7 @@ function AuthForm() {
                     setError(response.data.message || 'Failed to reset password');
                 }
             } else if (mode === 'verify') {
-                const response = await axios.post(`${API_URL}/auth/verify_email.php`, {
+                const response = await axios.post('/api/auth/proxy-verify', {
                     email: email,
                     code: verificationCode
                 });

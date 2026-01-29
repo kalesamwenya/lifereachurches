@@ -5,7 +5,9 @@ import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import io from 'socket.io-client';
-import { API_URL, SOCKET_URL } from '@/lib/api-config';
+
+const API_URL = 'https://content.lifereachchurch.org';
+const SOCKET_URL = 'http://localhost:4000';
 
 export default function MessagesDropdown({ isOpen }) {
     const { user } = useAuth();

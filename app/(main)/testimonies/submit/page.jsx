@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Mail, MapPin, MessageCircle, Send, CheckCircle, ArrowLeft, X } from 'lucide-react';
 import axios from "axios";
-import { API_URL } from '@/lib/api-config';
+
+const API_URL = 'https://content.lifereachchurch.org';
 
 // --- SweetAlert Style Modal ---
 const SwalModal = ({ isOpen, onClose }) => {

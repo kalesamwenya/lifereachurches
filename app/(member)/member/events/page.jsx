@@ -5,7 +5,8 @@ import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, MapPin, Use
 import axios from 'axios';
 import { useAuth } from '@/context/AuthContext';
 import { motion } from 'framer-motion';
-import { API_URL } from '@/lib/api-config';
+
+const API_URL = 'https://content.lifereachchurch.org';
 
 export default function MemberEventsCalendar() {
   const { user } = useAuth();
