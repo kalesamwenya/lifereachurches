@@ -83,9 +83,6 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
-
-  // Performance optimizations
-  swcMinify: true,
   
   // Output configuration
   output: 'standalone',

@@ -68,7 +68,7 @@ export const metadata = {
         icon: 'public/logo.png', // Points to app/icon.png or public/icon.png
         apple: 'public/logo.png',
     },
-    manifest: '/site.webmanifest',
+    manifest: '/manifest.json',
 };
 
 export default function RootLayout({ children }) {
