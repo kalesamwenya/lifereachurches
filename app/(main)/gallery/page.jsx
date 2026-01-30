@@ -7,6 +7,14 @@ import Link from 'next/link';
 
 const API_URL = 'https://content.lifereachchurch.org';
 
+const getImageUrl = (path) => {
+  if (!path) return null;
+  // If path already includes http/https, return as is
+  if (path.startsWith('http')) return path;
+  // Otherwise prepend the base URL
+  return `${API_URL}/${path}`;
+};
+
 // --- Sub-component: Gallery Card ---
 const GalleryCard = ({ gallery }) => (
   <Link
@@ -17,7 +25,7 @@ const GalleryCard = ({ gallery }) => (
     <div className="relative aspect-[4/3] overflow-hidden">
       {gallery.featured_image_url ? (
         <img
-          src={gallery.featured_image_url}
+          src={getImageUrl(gallery.featured_image_url)}
           alt={gallery.title}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />

@@ -11,6 +11,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const API_URL = 'https://content.lifereachchurch.org';
 
+const getImageUrl = (path) => {
+  if (!path) return null;
+  // If path already includes http/https, return as is
+  if (path.startsWith('http')) return path;
+  // Otherwise prepend the base URL
+  return `${API_URL}/${path}`;
+};
+
 export default function GalleryPage() {
     const { id } = useParams();
     const router = useRouter();
@@ -137,7 +145,7 @@ export default function GalleryPage() {
             {/* 1. Cinematic Hero Section */}
             <section className="relative h-[75vh] w-full overflow-hidden flex items-end">
                 <div className="absolute inset-0 z-0">
-                    <img src={coverImage} alt={gallery?.title} className="w-full h-full object-cover scale-105 animate-slow-zoom" />
+                    <img src={getImageUrl(coverImage)} alt={gallery?.title} className="w-full h-full object-cover scale-105 animate-slow-zoom" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
                 </div>
                 <div className="relative z-10 max-w-7xl mx-auto px-6 pb-20 w-full">
@@ -174,7 +182,7 @@ export default function GalleryPage() {
                             onClick={() => { setCurrentImageIndex(idx); setLightboxOpen(true); }}
                             className="relative group cursor-zoom-in overflow-hidden rounded-3xl bg-gray-50 shadow-sm hover:shadow-2xl transition-all duration-500"
                         >
-                            <img src={img.image_url} alt="" className="w-full h-auto transition-transform duration-1000 group-hover:scale-110" />
+                            <img src={getImageUrl(img.image_url)} alt="" className="w-full h-auto transition-transform duration-1000 group-hover:scale-110" />
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-6">
                                 <div className="flex justify-end">
                                     <button 
@@ -213,7 +221,7 @@ export default function GalleryPage() {
                                     <Heart size={24} fill={likedImages.includes(gallery.images[currentImageIndex].id) ? "currentColor" : "none"} />
                                     <span className="hidden sm:inline text-xs font-bold uppercase tracking-widest">Like</span>
                                 </button>
-                                <button onClick={() => handleDownload(gallery.images[currentImageIndex].image_url)} className="flex items-center gap-2 text-white/80 hover:text-orange-500 transition-colors text-xs font-bold uppercase tracking-widest">
+                                <button onClick={() => handleDownload(getImageUrl(gallery.images[currentImageIndex].image_url))} className="flex items-center gap-2 text-white/80 hover:text-orange-500 transition-colors text-xs font-bold uppercase tracking-widest">
                                     <Download size={22} /> <span className="hidden sm:inline">Download</span>
                                 </button>
                                 <button onClick={() => setLightboxOpen(false)} className="w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full transition-all hover:rotate-90">
@@ -224,14 +232,14 @@ export default function GalleryPage() {
 
                         <div className="flex-grow relative flex items-center justify-center p-4">
                             <button onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(prev => (prev - 1 + gallery.images.length) % gallery.images.length); }} className="absolute left-4 md:left-8 z-20 p-4 text-white/20 hover:text-orange-500 transition-all"><ChevronLeft size={60} strokeWidth={1} /></button>
-                            <motion.img key={currentImageIndex} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: "spring", damping: 25 }} src={gallery.images[currentImageIndex].image_url} className="max-w-full max-h-[75vh] object-contain shadow-2xl select-none" />
+                            <motion.img key={currentImageIndex} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: "spring", damping: 25 }} src={getImageUrl(gallery.images[currentImageIndex].image_url)} className="max-w-full max-h-[75vh] object-contain shadow-2xl select-none" />
                             <button onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(prev => (prev + 1) % gallery.images.length); }} className="absolute right-4 md:right-8 z-20 p-4 text-white/20 hover:text-orange-500 transition-all"><ChevronRight size={60} strokeWidth={1} /></button>
                         </div>
 
                         <div className="p-8 bg-black/90">
                             <div className="flex justify-center gap-3 overflow-x-auto max-w-5xl mx-auto py-2 px-4 no-scrollbar">
                                 {gallery.images.map((img, idx) => (
-                                    <button key={img.id} onClick={() => setCurrentImageIndex(idx)} className={`relative flex-shrink-0 w-20 h-14 rounded-lg overflow-hidden border-2 transition-all duration-300 ${idx === currentImageIndex ? 'border-orange-500 scale-110' : 'border-transparent opacity-30 hover:opacity-100'}`}><img src={img.image_url} className="w-full h-full object-cover" alt="" /></button>
+                                    <button key={img.id} onClick={() => setCurrentImageIndex(idx)} className={`relative flex-shrink-0 w-20 h-14 rounded-lg overflow-hidden border-2 transition-all duration-300 ${idx === currentImageIndex ? 'border-orange-500 scale-110' : 'border-transparent opacity-30 hover:opacity-100'}`}><img src={getImageUrl(img.image_url)} className="w-full h-full object-cover" alt="" /></button>
                                 ))}
                             </div>
                         </div>

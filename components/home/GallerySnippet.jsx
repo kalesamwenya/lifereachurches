@@ -12,6 +12,14 @@ export default function GallerySnippet() {
     const [images, setImages] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
+    const getImageUrl = (path) => {
+        if (!path) return null;
+        // If path already includes http/https, return as is
+        if (path.startsWith('http')) return path;
+        // Otherwise prepend the base URL
+        return `${API_URL}/${path}`;
+    };
+
     useEffect(() => {
         const fetchGallery = async () => {
             try {
@@ -59,7 +67,7 @@ export default function GallerySnippet() {
                                 onClick={() => window.location.href = '/gallery'}
                             >
                                 <img
-                                    src={img.featured_image_url}
+                                    src={getImageUrl(img.featured_image_url)}
                                     alt={img.title}
                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                 />

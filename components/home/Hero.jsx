@@ -10,6 +10,14 @@ export default function Hero() {
     // Standard high-quality fallback for Emit Photography
     const [heroImage, setHeroImage] = useState("https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=1920");
 
+    const getImageUrl = (path) => {
+        if (!path) return null;
+        // If path already includes http/https, return as is
+        if (path.startsWith('http')) return path;
+        // Otherwise prepend the base URL
+        return `${API_URL}/${path}`;
+    };
+
     useEffect(() => {
         const fetchHero = async () => {
             try {
@@ -17,7 +25,7 @@ export default function Hero() {
                 const res = await axios.get(`${API_URL}/gallery/get_featured.php`);
 
                 if (res.data && res.data.image_url) {
-                    setHeroImage(res.data.image_url);
+                    setHeroImage(getImageUrl(res.data.image_url));
                 }
             } catch (err) {
                 console.log("Using default hero background");
