@@ -74,7 +74,7 @@ export async function middleware(request) {
   if (isProtectedRoute) {
     const token = await getToken({
       req: request,
-      secret: process.env.NEXTAUTH_SECRET || 'your-secret-key-change-in-production',
+      secret: process.env.NEXTAUTH_SECRET || '9b7f3a4c1d8e4a2fb6c0e3a7d5f92c1e4b8a0f6d3c2e9a1b7d4f5e8c6a9b2',
     });
 
     if (!token) {

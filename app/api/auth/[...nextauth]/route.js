@@ -14,10 +14,14 @@ export const authOptions = {
             },
             async authorize(credentials) {
                 try {
+                    console.log('🔐 Attempting login to:', `${API_URL}/auth/login.php`);
+                    
                     const response = await axios.post(`${API_URL}/auth/login.php`, {
                         email: credentials.email,
                         password: credentials.password
                     });
+
+                    console.log('✅ Login response:', response.data);
 
                     if (response.data.success) {
                         const { user, token } = response.data.data;
@@ -33,9 +37,16 @@ export const authOptions = {
                             accessToken: token
                         };
                     }
+                    
+                    console.error('❌ Login failed - success=false');
                     return null;
                 } catch (error) {
-                    console.error('Auth error:', error);
+                    console.error('❌ Auth error:', {
+                        message: error.message,
+                        status: error.response?.status,
+                        data: error.response?.data,
+                        url: `${API_URL}/auth/login.php`
+                    });
                     return null;
                 }
             }
@@ -76,7 +87,7 @@ export const authOptions = {
         strategy: 'jwt',
         maxAge: 24 * 60 * 60 // 24 hours
     },
-    secret: process.env.NEXTAUTH_SECRET || 'your-secret-key-change-in-production'
+    secret: process.env.NEXTAUTH_SECRET || '9b7f3a4c1d8e4a2fb6c0e3a7d5f92c1e4b8a0f6d3c2e9a1b7d4f5e8c6a9b2'
 };
 
 const handler = NextAuth(authOptions);

@@ -2,6 +2,7 @@
 import React from 'react';
 import "./globals.css";
 import { SessionProvider } from '@/components/SessionProvider';
+import { AppProviders } from '@/context/AppProviders';
 
 // --- Global SEO Configuration ---
 export const viewport = {
@@ -76,7 +77,9 @@ export default function RootLayout({ children }) {
         <html lang="en">
         <body className="bg-white text-gray-900 font-sans selection:bg-orange-200 selection:text-orange-900">
             <SessionProvider>
-                {children}
+                <AppProviders>
+                    {children}
+                </AppProviders>
             </SessionProvider>
         </body>
         </html>

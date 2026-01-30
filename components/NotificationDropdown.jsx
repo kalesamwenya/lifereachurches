@@ -24,9 +24,20 @@ export default function NotificationDropdown({ isOpen }) {
     try {
       setLoading(true);
       const res = await axios.get(`${API_URL}/notifications/get_member_notifications.php?member_id=${user.id}`);
+      
+      // Debug logging
+      console.log('Notifications API Response:', res.data);
+      
+      if (res.data.success === false) {
+        console.error('API returned error:', res.data.message);
+        setNotifications([]);
+        return;
+      }
+      
       setNotifications(res.data.notifications || []);
     } catch (err) {
       console.error('Failed to fetch notifications:', err);
+      console.error('Error details:', err.response?.data);
     } finally {
       setLoading(false);
     }

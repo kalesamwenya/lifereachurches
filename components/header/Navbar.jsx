@@ -41,7 +41,7 @@ export default function Navbar() {
         router.push('/auth');
     };
 
-    const transparentPages = ['/', '/about', '/events', '/podcast', '/live'];
+    const transparentPages = ['/', '/about', '/events', '/podcast', '/live', '/education'];
     const isTransparentPage = transparentPages.includes(pathname);
 
     // Update: Navbar becomes solid if scrolled, OR not a transparent page, OR if the menu is open
@@ -124,6 +124,7 @@ export default function Navbar() {
                     <a href="/events" className={`font-semibold text-sm uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/events' ? 'text-orange-500' : (isSolid ? 'text-gray-600' : 'text-gray-200')}`}>Events</a>
                     <a href="/live" className={`font-semibold text-sm uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/live' ? 'text-orange-500' : (isSolid ? 'text-gray-600' : 'text-gray-200')}`}>Live</a>
                     <a href="/contact" className={`font-semibold text-sm uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/contact' ? 'text-orange-500' : (isSolid ? 'text-gray-600' : 'text-gray-200')}`}>Contact</a>
+                     <a href="/education" className={`font-semibold text-sm uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/education' ? 'text-orange-500' : (isSolid ? 'text-gray-600' : 'text-gray-200')}`}>Learn</a>
 
                     <div className="flex items-center gap-3 ml-2">
                         <a href="/plan-visit">

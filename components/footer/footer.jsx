@@ -1,19 +1,66 @@
 'use client';
 
-import React, {useState} from 'react';
-import { Facebook, Instagram, Youtube, ChevronRight, Clock, MapPin, Phone, Heart, Mic, BookOpen, Mail } from 'lucide-react';
+import React, {useState, useEffect} from 'react';
+import { Facebook, Instagram, Youtube, ChevronRight, Clock, MapPin, Phone, Heart, Mic, BookOpen, Mail, GraduationCap } from 'lucide-react';
 import Image from "next/image";
 import {usePathname} from "next/navigation";
 import {BsTiktok} from "react-icons/bs";
 import {MdEmail} from "react-icons/md";
+import axios from 'axios';
+
+const API_URL = 'https://content.lifereachchurch.org';
 
 export default function Footer() {
     const [isOpen, setIsOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
+    const [churchSettings, setChurchSettings] = useState(null);
 
     const pathname = usePathname();
     const transparentPages = ['/', '/about', '/events', '/podcast'];
     const isTransparentPage = transparentPages.includes(pathname);
+
+    useEffect(() => {
+        fetchChurchSettings();
+    }, []);
+
+    const fetchChurchSettings = async () => {
+        try {
+            const response = await axios.get(`${API_URL}/settings/get.php`);
+            setChurchSettings(response.data);
+        } catch (error) {
+            console.error('Error fetching church settings:', error);
+        }
+    };
+
+    // Get contact info from DB or use defaults
+    const churchName = churchSettings?.name || 'Life Reach Church';
+    const churchAddress = churchSettings?.address || 'Zamise Theater Hall, Kamwala, Lusaka';
+    const churchPhone = churchSettings?.phone || '762585742';
+    const churchEmail = churchSettings?.email || 'lifereachchurch@gmail.com';
+    
+    // Social media links from DB
+    const socialLinks = [
+        { 
+            Icon: Facebook, 
+            url: churchSettings?.facebook_url || '#',
+            name: 'Facebook'
+        },
+        { 
+            Icon: Instagram, 
+            url: churchSettings?.instagram_url || '#',
+            name: 'Instagram'
+        },
+        { 
+            Icon: Youtube, 
+            url: churchSettings?.youtube_url || '#',
+            name: 'YouTube'
+        },
+        { 
+            Icon: BsTiktok, 
+            url: churchSettings?.tiktok_url || '#',
+            name: 'TikTok'
+        }
+    ];
 
     // Update: Navbar becomes solid if scrolled, OR not a transparent page, OR if the menu is open
     // This ensures text/buttons are always visible (dark) when the white mobile menu is active.
@@ -33,15 +80,22 @@ export default function Footer() {
                                     alt={`life reach church logo`}
                                 />
                             </div>
-                            Life Reach Church
+                            {churchName}
                         </div>
                         <p className="mb-8 leading-relaxed text-gray-400">
                             Reaching the lost, Raising disciples, and Releasing leaders. Join the movement.
                         </p>
                         <div className="flex gap-4">
-                            {[Facebook, Instagram, Youtube,BsTiktok].map((Icon, i) => (
-                                <a key={i} href="#" className="w-12 h-12 rounded-full bg-gray-900 flex items-center justify-center hover:bg-orange-600 transition-colors group">
-                                    <Icon size={20} className="group-hover:text-white transition-colors text-gray-400" />
+                            {socialLinks.map((social, i) => (
+                                <a 
+                                    key={i} 
+                                    href={social.url} 
+                                    target={social.url !== '#' ? '_blank' : '_self'}
+                                    rel={social.url !== '#' ? 'noopener noreferrer' : ''}
+                                    className="w-12 h-12 rounded-full bg-gray-900 flex items-center justify-center hover:bg-orange-600 transition-colors group"
+                                    aria-label={social.name}
+                                >
+                                    <social.Icon size={20} className="group-hover:text-white transition-colors text-gray-400" />
                                 </a>
                             ))}
                         </div>
@@ -88,6 +142,11 @@ export default function Footer() {
                                     <BookOpen size={16} className="text-orange-600" /> Library
                                 </a>
                             </li>
+                            <li>
+                                <a href="/education" className="hover:text-orange-500 transition-colors flex items-center gap-2">
+                                    <GraduationCap size={16} className="text-orange-600" /> Education
+                                </a>
+                            </li>
                         </ul>
                     </div>
 
@@ -98,19 +157,19 @@ export default function Footer() {
                                 <div className="p-2 bg-gray-900 rounded-lg text-orange-500">
                                     <MapPin size={20} />
                                 </div>
-                                <span>Zamise Theater Hall<br/>Kamwala, Lusaka</span>
+                                <span>{churchAddress}</span>
                             </li>
                             <li className="flex items-center gap-4">
                                 <div className="p-2 bg-gray-900 rounded-lg text-orange-500">
                                     <Phone size={20} />
                                 </div>
-                                <span>(260) 762585742</span>
+                                <span>{churchPhone}</span>
                             </li>
                             <li className="flex items-center gap-4">
                                 <div className="p-2 bg-gray-900 rounded-lg text-orange-500">
                                     <MdEmail size={20} />
                                 </div>
-                                <span>lifereachchurch@gmail.com</span>
+                                <span>{churchEmail}</span>
                             </li>
                             <li className="flex items-center gap-4">
                                 <div className="p-2 bg-gray-900 rounded-lg text-orange-500">
@@ -126,7 +185,7 @@ export default function Footer() {
                 </div>
 
                 <div className="border-t border-gray-900 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
-                    <p>&copy; 2023 Life Reach Church. All rights reserved.</p>
+                    <p>&copy; {new Date().getFullYear()} {churchName}. All rights reserved.</p>
                     <div className="flex gap-8 mt-4 md:mt-0">
                         <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
                         <a href="/contact" className="hover:text-white transition-colors">Contact Support</a>

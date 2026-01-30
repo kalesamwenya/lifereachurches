@@ -2,21 +2,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Mail, CheckCheck, Volume2, VolumeX, Hash, Users } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { usePusher } from '@/context/PusherContext';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import io from 'socket.io-client';
 
 const API_URL = 'https://content.lifereachchurch.org';
-const SOCKET_URL = 'http://localhost:4000';
 
 export default function MessagesDropdown({ isOpen }) {
     const { user } = useAuth();
+    const { subscribe, unsubscribe, isConnected } = usePusher();
     const router = useRouter();
     const [messages, setMessages] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [soundEnabled, setSoundEnabled] = useState(true);
     const [loading, setLoading] = useState(false);
-    const socketRef = useRef(null);
     const audioRef = useRef(null);
     const previousCountRef = useRef(0);
 
@@ -30,26 +29,25 @@ export default function MessagesDropdown({ isOpen }) {
 
     // Initialize audio element with custom notification sound
     useEffect(() => {
-        const audio = new Audio('/sounds/notification.mp3');
-        audio.volume = 0.7;
-        audio.preload = 'auto';
-        
-        audio.addEventListener('loadeddata', () => {
-            console.log('✅ Notification sound loaded successfully');
-        });
-        
-        audio.addEventListener('error', (e) => {
-            console.error('❌ Failed to load notification sound:', {
-                error: e.target?.error,
-                src: e.target?.src,
-                networkState: e.target?.networkState,
-                readyState: e.target?.readyState
+        try {
+            const audio = new Audio('/sounds/notification.mp3');
+            audio.volume = 0.7;
+            audio.preload = 'auto';
+            
+            audio.addEventListener('loadeddata', () => {
+                console.log('✅ Member notification sound loaded successfully');
             });
-            // Fallback: Use browser's default notification sound or silent operation
-            console.log('ℹ️ Continuing without notification sound');
-        });
-        
-        audioRef.current = audio;
+            
+            audio.addEventListener('error', () => {
+                // Gracefully handle audio loading errors - not critical
+                console.warn('⚠️ Member notification sound not available, continuing without sound');
+            });
+            
+            audioRef.current = audio;
+        } catch (error) {
+            // If audio initialization fails, continue without sound
+            console.warn('⚠️ Could not initialize notification sound:', error.message);
+        }
         
         return () => {
             if (audioRef.current) {
@@ -102,55 +100,46 @@ export default function MessagesDropdown({ isOpen }) {
         }
     };
 
-    // Connect to Socket.IO for real-time notifications
+    // Subscribe to Pusher for real-time notifications
     useEffect(() => {
-        if (!user?.id) {
-            console.log('No user, skipping Socket.IO connection');
-            return;
-        }
+        if (!user?.id || !isConnected) return;
 
-        console.log('Connecting to Socket.IO with user:', user);
+        console.log('📡 Subscribing to Pusher channel for user:', user.id);
 
-        const socket = io('http://localhost:4000', {
-            transports: ['websocket'],
-            reconnection: true,
+        const channelName = `private-user-${user.id}`;
+        
+        const channel = subscribe(channelName, {
+            'new-message': (data) => {
+                console.log('📩 New message received:', data);
+                
+                // Refresh messages list
+                fetchUnreadMessages();
+                
+                // Play notification sound
+                playNotificationSound();
+                
+                // Show browser notification
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification('New Message', {
+                        body: `${data.sender_name}: ${data.message}`,
+                        icon: '/logo.png',
+                        badge: '/logo.png'
+                    });
+                }
+            },
+            'message-read': (data) => {
+                console.log('✅ Message marked as read:', data);
+                fetchUnreadMessages();
+            }
         });
-
-        socket.on('connect', () => {
-            console.log('✅ Connected to realtime server for notifications');
-            
-            const firstName = user.first_name || user.firstName || '';
-            const lastName = user.last_name || user.lastName || '';
-            const fullName = `${firstName} ${lastName}`.trim() || 'Member';
-            
-            socket.emit('authenticate', {
-                userId: user.id,
-                username: fullName,
-                token: localStorage.getItem('auth_token')
-            });
-        });
-
-        // Listen for message notifications
-        socket.on('message_notification', (data) => {
-            console.log('🔔 Message notification received:', data);
-            
-            // Fetch updated unread messages
-            fetchUnreadMessages();
-        });
-
-        socketRef.current = socket;
 
         // Initial fetch
         fetchUnreadMessages();
 
-        // Poll every 30 seconds as backup
-        const interval = setInterval(fetchUnreadMessages, 30000);
-
         return () => {
-            socket.disconnect();
-            clearInterval(interval);
+            unsubscribe(channelName);
         };
-    }, [user?.id, soundEnabled]);
+    }, [user?.id, isConnected, subscribe, unsubscribe, soundEnabled]);
 
     const playNotificationSound = () => {
         console.log('🔊 Attempting to play notification sound...', { 
@@ -264,6 +253,10 @@ export default function MessagesDropdown({ isOpen }) {
                     )}
                 </div>
                 <div className="flex items-center gap-2">
+                    {/* Connection Status */}
+                    <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-gray-400'}`} 
+                         title={isConnected ? 'Connected to Pusher' : 'Disconnected'} />
+                    
                     <button 
                         onClick={toggleSound}
                         className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors"

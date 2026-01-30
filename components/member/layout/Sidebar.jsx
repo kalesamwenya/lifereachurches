@@ -3,7 +3,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  LayoutDashboard, User, Heart, PlayCircle, BookOpen, Settings, Users, X, MessageSquare, Calendar
+  LayoutDashboard, User, Heart, PlayCircle, BookOpen, Settings, Users, X, MessageSquare, Calendar, GraduationCap
 } from 'lucide-react';
 
 export default function Sidebar({ open, setOpen }) {
@@ -13,6 +13,7 @@ export default function Sidebar({ open, setOpen }) {
     { icon: LayoutDashboard, label: "Dashboard", href: "/member/" },
     { icon: MessageSquare, label: "Messages", href: "/member/messages" },
     { icon: Calendar, label: "Events", href: "/member/events" },
+    { icon: GraduationCap, label: "Education", href: "/education" },
     { icon: User, label: "Profile", href: "/member/profile" },
     { icon: Heart, label: "Giving & Tithes", href: "/member/giving" },
     { icon: PlayCircle, label: "Sermon Reviews", href: "/member/sermons" },

@@ -14,7 +14,13 @@ export function AuthProvider({ children }) {
 
     useEffect(() => {
         if (session?.user) {
-            setUser(session.user);
+            // Map session user to consistent format
+            const mappedUser = {
+                ...session.user,
+                first_name: session.user.firstName || session.user.first_name,
+                last_name: session.user.lastName || session.user.last_name,
+            };
+            setUser(mappedUser);
             setToken(session.user.accessToken || null);
         } else {
             setUser(null);

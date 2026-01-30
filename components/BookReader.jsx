@@ -21,6 +21,7 @@ export default function BookReader({ book, isOpen, onClose, userId }) {
   const [showSettings, setShowSettings] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
   const [showHighlights, setShowHighlights] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // New: Toggle sidebar
   
   // Accessibility
   const [highContrast, setHighContrast] = useState(false);
@@ -328,63 +329,53 @@ export default function BookReader({ book, isOpen, onClose, userId }) {
       className="fixed inset-0 z-50 flex flex-col"
     >
       {/* Header */}
-      <div className={`${currentTheme.bg} border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} px-4 py-3 flex items-center justify-between`}>
-        <div className="flex items-center gap-4">
+      <div className={`${currentTheme.bg} border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} px-2 sm:px-4 py-2 sm:py-3 flex items-center justify-between`}>
+        <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
           <button
             onClick={onClose}
-            className={`p-2 rounded-full hover:bg-gray-100 ${theme === 'dark' ? 'hover:bg-gray-800' : ''}`}
+            className={`p-1.5 sm:p-2 rounded-full hover:bg-gray-100 ${theme === 'dark' ? 'hover:bg-gray-800' : ''} flex-shrink-0`}
           >
-            <X size={20} className={currentTheme.text} />
+            <X size={18} className={`${currentTheme.text} sm:w-5 sm:h-5`} />
           </button>
-          <div>
-            <h2 className={`font-bold text-sm ${currentTheme.text}`}>{book?.title}</h2>
-            <p className={`text-xs ${currentTheme.secondary}`}>{book?.author}</p>
+          <div className="min-w-0 flex-1">
+            <h2 className={`font-bold text-xs sm:text-sm ${currentTheme.text} truncate`}>{book?.title}</h2>
+            <p className={`text-[10px] sm:text-xs ${currentTheme.secondary} truncate hidden sm:block`}>{book?.author}</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Font Size */}
-          <button
-            onClick={() => setFontSize(Math.max(12, fontSize - 2))}
-            className={`p-2 rounded-full hover:bg-gray-100 ${theme === 'dark' ? 'hover:bg-gray-800' : ''}`}
-            title="Decrease font size"
-          >
-            <Minus size={18} className={currentTheme.text} />
-          </button>
-          <span className={`text-sm font-bold ${currentTheme.text} min-w-[40px] text-center`}>{fontSize}px</span>
-          <button
-            onClick={() => setFontSize(Math.min(32, fontSize + 2))}
-            className={`p-2 rounded-full hover:bg-gray-100 ${theme === 'dark' ? 'hover:bg-gray-800' : ''}`}
-            title="Increase font size"
-          >
-            <Plus size={18} className={currentTheme.text} />
-          </button>
+        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+          {/* Font Size Controls - Hidden on small screens */}
+          <div className="hidden md:flex items-center gap-1">
+            <button
+              onClick={() => setFontSize(Math.max(12, fontSize - 2))}
+              className={`p-2 rounded-full hover:bg-gray-100 ${theme === 'dark' ? 'hover:bg-gray-800' : ''}`}
+              title="Decrease font size"
+            >
+              <Minus size={18} className={currentTheme.text} />
+            </button>
+            <span className={`text-sm font-bold ${currentTheme.text} min-w-[40px] text-center`}>{fontSize}px</span>
+            <button
+              onClick={() => setFontSize(Math.min(32, fontSize + 2))}
+              className={`p-2 rounded-full hover:bg-gray-100 ${theme === 'dark' ? 'hover:bg-gray-800' : ''}`}
+              title="Increase font size"
+            >
+              <Plus size={18} className={currentTheme.text} />
+            </button>
+          </div>
 
           {/* Theme Toggle */}
           <button
             onClick={() => setTheme(theme === 'light' ? 'sepia' : theme === 'sepia' ? 'dark' : 'light')}
-            className={`p-2 rounded-full hover:bg-gray-100 ${theme === 'dark' ? 'hover:bg-gray-800' : ''}`}
+            className={`p-1.5 sm:p-2 rounded-full hover:bg-gray-100 ${theme === 'dark' ? 'hover:bg-gray-800' : ''}`}
             title="Change theme"
           >
-            {theme === 'dark' ? <Moon size={20} className={currentTheme.text} /> : <Sun size={20} className={currentTheme.text} />}
+            {theme === 'dark' ? <Moon size={18} className={`${currentTheme.text} sm:w-5 sm:h-5`} /> : <Sun size={18} className={`${currentTheme.text} sm:w-5 sm:h-5`} />}
           </button>
 
-          {/* High Contrast */}
-          <button
-            onClick={() => {
-              setHighContrast(!highContrast);
-              saveSettings({ fontSize, fontFamily, lineHeight, theme, highContrast: !highContrast });
-            }}
-            className={`p-2 rounded-full hover:bg-gray-100 ${theme === 'dark' ? 'hover:bg-gray-800' : ''} ${highContrast ? 'bg-orange-100' : ''}`}
-            title="Toggle high contrast"
-          >
-            <Eye size={20} className={highContrast ? 'text-orange-600' : currentTheme.text} />
-          </button>
-
-          {/* Bookmark */}
+          {/* Bookmark - Hidden on small screens */}
           <button
             onClick={toggleBookmark}
-            className={`p-2 rounded-full hover:bg-gray-100 ${theme === 'dark' ? 'hover:bg-gray-800' : ''}`}
+            className={`hidden sm:flex p-2 rounded-full hover:bg-gray-100 ${theme === 'dark' ? 'hover:bg-gray-800' : ''}`}
             title="Bookmark this page"
           >
             <Bookmark
@@ -393,10 +384,19 @@ export default function BookReader({ book, isOpen, onClose, userId }) {
             />
           </button>
 
+          {/* Sidebar Toggle Button - Shows on all devices */}
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className={`p-1.5 sm:p-2 rounded-full hover:bg-gray-100 ${theme === 'dark' ? 'hover:bg-gray-800' : ''} ${sidebarOpen ? 'bg-orange-100' : ''}`}
+            title="Toggle notes & highlights"
+          >
+            <Menu size={18} className={`${sidebarOpen ? 'text-orange-600' : currentTheme.text} sm:w-5 sm:h-5`} />
+          </button>
+
           {/* Settings */}
           <button
             onClick={() => setShowSettings(!showSettings)}
-            className={`p-2 rounded-full hover:bg-gray-100 ${theme === 'dark' ? 'hover:bg-gray-800' : ''}`}
+            className={`p-1.5 sm:p-2 rounded-full hover:bg-gray-100 ${theme === 'dark' ? 'hover:bg-gray-800' : ''}`}
             title="Settings"
           >
             <Settings size={20} className={currentTheme.text} />
@@ -413,16 +413,16 @@ export default function BookReader({ book, isOpen, onClose, userId }) {
           onMouseUp={handleTextSelection}
         >
           <div
-            className="max-w-4xl mx-auto px-8 py-12"
-            style={{
-              fontSize: `${fontSize}px`,
-              fontFamily: fontFamily === 'serif' ? 'Georgia, serif' : fontFamily === 'sans' ? 'Arial, sans-serif' : 'monospace',
-              lineHeight: lineHeight
-            }}
-          >
-            <div className={currentTheme.text}>
-              {/* Sample content - would be replaced with actual book content */}
-              <h1 className="text-3xl font-bold mb-8">Chapter {currentPage}</h1>
+className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-8 md:py-12"
+          style={{
+            fontSize: `${fontSize}px`,
+            fontFamily: fontFamily === 'serif' ? 'Georgia, serif' : fontFamily === 'sans' ? 'Arial, sans-serif' : 'monospace',
+            lineHeight: lineHeight
+          }}
+        >
+          <div className={currentTheme.text}>
+            {/* Sample content - would be replaced with actual book content */}
+            <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">Chapter {currentPage}</h1>
               
               <p className="mb-6">
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
@@ -454,26 +454,38 @@ export default function BookReader({ book, isOpen, onClose, userId }) {
           </div>
         </div>
 
-        {/* Side Panel for Notes/Highlights */}
+        {/* Side Panel for Notes/Highlights - Responsive Sidebar */}
         <AnimatePresence>
-          {(showNotes || showHighlights) && (
+          {sidebarOpen && (
             <motion.div
               initial={{ x: 300 }}
               animate={{ x: 0 }}
               exit={{ x: 300 }}
-              className={`w-80 ${currentTheme.bg} border-l ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} overflow-y-auto`}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className={`fixed md:relative right-0 top-0 bottom-0 w-full sm:w-96 md:w-80 ${currentTheme.bg} border-l ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} overflow-y-auto shadow-2xl md:shadow-none z-40`}
             >
+              {/* Close button for mobile */}
+              <div className="md:hidden sticky top-0 z-10 bg-white border-b p-3 flex items-center justify-between">
+                <h3 className="font-bold text-gray-900">Notes & Highlights</h3>
+                <button
+                  onClick={() => setSidebarOpen(false)}
+                  className="p-2 hover:bg-gray-100 rounded-full"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
               <div className="p-4">
                 <div className="flex gap-2 mb-4">
                   <button
                     onClick={() => { setShowNotes(true); setShowHighlights(false); }}
-                    className={`flex-1 py-2 rounded-lg text-sm font-bold ${showNotes ? 'bg-orange-600 text-white' : 'bg-gray-100'}`}
+                    className={`flex-1 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-colors ${showNotes ? 'bg-orange-600 text-white' : 'bg-gray-100 text-gray-700'}`}
                   >
                     Notes ({notes.length})
                   </button>
                   <button
                     onClick={() => { setShowHighlights(true); setShowNotes(false); }}
-                    className={`flex-1 py-2 rounded-lg text-sm font-bold ${showHighlights ? 'bg-orange-600 text-white' : 'bg-gray-100'}`}
+                    className={`flex-1 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-colors ${showHighlights ? 'bg-orange-600 text-white' : 'bg-gray-100 text-gray-700'}`}
                   >
                     Highlights ({highlights.length})
                   </button>
@@ -482,16 +494,20 @@ export default function BookReader({ book, isOpen, onClose, userId }) {
                 {showNotes && (
                   <div className="space-y-3">
                     {notes.map(note => (
-                      <div key={note.id} className="bg-yellow-50 p-3 rounded-lg">
+                      <div key={note.id} className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
                         <p className="text-xs text-gray-500 mb-1">Page {note.page}</p>
                         {note.reference_text && (
-                          <p className="text-sm italic text-gray-600 mb-2">"{note.reference_text}"</p>
+                          <p className="text-xs sm:text-sm italic text-gray-600 mb-2">"{note.reference_text}"</p>
                         )}
-                        <p className="text-sm font-medium">{note.note}</p>
+                        <p className="text-xs sm:text-sm font-medium text-gray-900">{note.note}</p>
                       </div>
                     ))}
                     {notes.length === 0 && (
-                      <p className="text-sm text-gray-500 text-center py-8">No notes yet</p>
+                      <div className="text-center py-8 sm:py-12">
+                        <StickyNote className="mx-auto mb-3 text-gray-300" size={40} />
+                        <p className="text-sm text-gray-500">No notes yet</p>
+                        <p className="text-xs text-gray-400 mt-1">Select text to add notes</p>
+                      </div>
                     )}
                   </div>
                 )}
@@ -499,18 +515,30 @@ export default function BookReader({ book, isOpen, onClose, userId }) {
                 {showHighlights && (
                   <div className="space-y-3">
                     {highlights.map(highlight => (
-                      <div key={highlight.id} className={`p-3 rounded-lg ${
-                        highlight.color === 'yellow' ? 'bg-yellow-100' :
-                        highlight.color === 'green' ? 'bg-green-100' :
-                        highlight.color === 'blue' ? 'bg-blue-100' :
-                        'bg-pink-100'
+                      <div key={highlight.id} className={`p-3 rounded-lg border ${
+                        highlight.color === 'yellow' ? 'bg-yellow-50 border-yellow-200' :
+                        highlight.color === 'green' ? 'bg-green-50 border-green-200' :
+                        highlight.color === 'blue' ? 'bg-blue-50 border-blue-200' :
+                        'bg-pink-50 border-pink-200'
                       }`}>
-                        <p className="text-xs text-gray-500 mb-1">Page {highlight.page}</p>
-                        <p className="text-sm font-medium">{highlight.text}</p>
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <p className="text-xs text-gray-500">Page {highlight.page}</p>
+                          <div className={`w-3 h-3 rounded-full ${
+                            highlight.color === 'yellow' ? 'bg-yellow-400' :
+                            highlight.color === 'green' ? 'bg-green-400' :
+                            highlight.color === 'blue' ? 'bg-blue-400' :
+                            'bg-pink-400'
+                          }`}></div>
+                        </div>
+                        <p className="text-xs sm:text-sm font-medium text-gray-900">{highlight.text}</p>
                       </div>
                     ))}
                     {highlights.length === 0 && (
-                      <p className="text-sm text-gray-500 text-center py-8">No highlights yet</p>
+                      <div className="text-center py-8 sm:py-12">
+                        <Highlighter className="mx-auto mb-3 text-gray-300" size={40} />
+                        <p className="text-sm text-gray-500">No highlights yet</p>
+                        <p className="text-xs text-gray-400 mt-1">Select text and highlight</p>
+                      </div>
                     )}
                   </div>
                 )}
@@ -518,6 +546,77 @@ export default function BookReader({ book, isOpen, onClose, userId }) {
             </motion.div>
           )}
         </AnimatePresence>
+      </div>
+
+      {/* Mobile Bottom Navigation Bar */}
+      <div className={`md:hidden ${currentTheme.bg} border-t ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} px-4 py-3 flex items-center justify-between`}>
+        <button
+          onClick={() => goToPage(currentPage - 1)}
+          disabled={currentPage === 1}
+          className={`p-2 rounded-full ${currentPage === 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-gray-100'}`}
+        >
+          <ChevronLeft size={20} className={currentTheme.text} />
+        </button>
+
+        <div className="flex items-center gap-3">
+          <button
+            onClick={toggleBookmark}
+            className="p-2"
+          >
+            <Bookmark
+              size={20}
+              className={bookmarks.some(b => b.page === currentPage) ? 'text-orange-600 fill-orange-600' : currentTheme.text}
+            />
+          </button>
+          <span className={`text-sm font-bold ${currentTheme.text}`}>
+            {currentPage} / {totalPages}
+          </span>
+          <button
+            onClick={() => setShowSettings(!showSettings)}
+            className="p-2"
+          >
+            <Settings size={20} className={currentTheme.text} />
+          </button>
+        </div>
+
+        <button
+          onClick={() => goToPage(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className={`p-2 rounded-full ${currentPage === totalPages ? 'opacity-30 cursor-not-allowed' : 'hover:bg-gray-100'}`}
+        >
+          <ChevronRight size={20} className={currentTheme.text} />
+        </button>
+      </div>
+
+      {/* Desktop Bottom Navigation */}
+      <div className={`hidden md:flex ${currentTheme.bg} border-t ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} px-6 py-4 items-center justify-between`}>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => goToPage(currentPage - 1)}
+            disabled={currentPage === 1}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg ${currentPage === 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-gray-100 dark:hover:bg-gray-700'} ${currentTheme.text}`}
+          >
+            <ChevronLeft size={18} />
+            <span>Previous</span>
+          </button>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <span className={`text-sm font-medium ${currentTheme.text}`}>
+            Page {currentPage} of {totalPages}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => goToPage(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg ${currentPage === totalPages ? 'opacity-30 cursor-not-allowed' : 'hover:bg-gray-100 dark:hover:bg-gray-700'} ${currentTheme.text}`}
+          >
+            <span>Next</span>
+            <ChevronRight size={18} />
+          </button>
+        </div>
       </div>
 
       {/* Text Selection Toolbar */}

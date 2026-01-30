@@ -5,10 +5,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     Heart, Camera, Mic, Music, Coffee, Baby,
     Shield, Send, CheckCircle, User, Mail, Phone, Hand,
-    X, ArrowRight, ArrowLeft, HelpingHandIcon, HouseHeartIcon, CameraIcon, TrafficConeIcon
+    X, ArrowRight, ArrowLeft, HelpingHandIcon, HouseHeartIcon, CameraIcon, TrafficConeIcon, Users, Truck
 } from 'lucide-react';
 import {BsBalloon, BsBalloonFill} from "react-icons/bs";
 import {BiMicrophone} from "react-icons/bi";
+import axios from 'axios';
+
+const API_URL = 'https://content.lifereachchurch.org';
 
 // --- Local Components ---
 
@@ -37,7 +40,7 @@ const Card = ({ children, className = "", onClick }) => (
 
 // --- Volunteer Wizard Modal ---
 
-const VolunteerModal = ({ isOpen, onClose, initialDept }) => {
+const VolunteerModal = ({ isOpen, onClose, initialDept, departments }) => {
     const [step, setStep] = useState(1); // 1: Contact, 2: Details, 3: Success
     const [formData, setFormData] = useState({
         name: '',
@@ -187,7 +190,7 @@ const VolunteerModal = ({ isOpen, onClose, initialDept }) => {
                                     >
                                         <option value="" disabled>Select a department...</option>
                                         {departments.map(d => (
-                                            <option key={d.id} value={d.id}>{d.title}</option>
+                                            <option key={d.id} value={d.id}>{d.name}</option>
                                         ))}
                                     </select>
                                 </div>
@@ -226,7 +229,7 @@ const VolunteerModal = ({ isOpen, onClose, initialDept }) => {
                                 </div>
                                 <h3 className="text-3xl font-bold text-gray-900 mb-4">You're All Set!</h3>
                                 <p className="text-gray-600 text-lg mb-8">
-                                    Thanks for signing up, {formData.name.split(' ')[0]}! A team leader from <span className="font-bold text-orange-600">{departments.find(d => d.id === formData.dept)?.title}</span> will contact you shortly.
+                                    Thanks for signing up, {formData.name.split(' ')[0]}! A team leader from <span className="font-bold text-orange-600">{departments.find(d => d.id === formData.dept)?.name}</span> will contact you shortly.
                                 </p>
                                 <button onClick={reset} className="w-full bg-gray-900 text-white font-bold py-4 rounded-xl hover:bg-gray-800">
                                     Close
@@ -240,50 +243,75 @@ const VolunteerModal = ({ isOpen, onClose, initialDept }) => {
     );
 };
 
-// --- Mock Data ---
-
-const departments = [
-    { id: 'Deco',
-        title: "Decoration",
-        desc: "Musicians, vocalists, and artists who lead us into God's presence.",
-        icon: <BsBalloon size={32} />
-    },
-    { id: 'Helps',
-        title: "Helps",
-        desc: "The Helps Department stands as a dedicated group within our church community, entrusted with the sacred responsibility of ensuring the cleanliness and welcoming atmosphere of our worship spaces. Committed to upholding the values of respect, service, and unity, the department plays a vital role in contributing to the overall spiritual environment of our church. ",
-        icon: <HelpingHandIcon size={32} />
-    },
-    { id: 'Hospitality',
-        title: "Hospitality",
-        desc: "The Hospitality Department aims to create a warm and inviting atmosphere, fostering a sense of community, where individuals can connect, feel valued, and experience the love of Christ through genuine hospitality.",
-        icon: <HouseHeartIcon size={32} />
-    },
-    { id: 'Worship',
-        title: "Manifest",
-        desc: "Musicians, vocalists, and artists who lead us into God's presence.",
-        icon: <BiMicrophone size={32} />
-    },
-    { id: 'Media',
-        title: "Media",
-        desc: "The Media department is one of the key departments at Life Reach Church.",
-        icon: <CameraIcon size={32} />
-    },
-    { id: 'Protocol',
-        title: "Protocol",
-        desc: "This is the mandate of the Protocol Department of Life Reach Church. They have the primary responsibility\n" +
-            "of creating an orderly environment suitable for the Spirit of God to manifest Himself.",
-        icon: <Shield size={32} />
-    },
-    { id: 'Ushers',
-        title: "Ushers",
-        desc: "Musicians, vocalists, and artists who lead us into God's presence.",
-        icon: <TrafficConeIcon size={32} />
-    },
-];
+// Icon mapping for departments and wings
+const getDeptIcon = (name, type) => {
+    const iconMap = {
+        'deco': <BsBalloon size={32} />,
+        'decoration': <BsBalloon size={32} />,
+        'helps': <HelpingHandIcon size={32} />,
+        'hospitality': <HouseHeartIcon size={32} />,
+        'manifest': <BiMicrophone size={32} />,
+        'worship': <BiMicrophone size={32} />,
+        'media': <CameraIcon size={32} />,
+        'protocol': <Shield size={32} />,
+        'ushers': <TrafficConeIcon size={32} />,
+        'usher': <TrafficConeIcon size={32} />,
+        'transportation': <Truck size={32} />,
+        'logistics': <Truck size={32} />,
+    };
+    
+    const lowerName = name.toLowerCase();
+    for (const [key, icon] of Object.entries(iconMap)) {
+        if (lowerName.includes(key)) {
+            return icon;
+        }
+    }
+    
+    // Default icons by type
+    if (type === 'wing') return <Truck size={32} />;
+    return <Users size={32} />; // Default for departments
+};
 
 export default function VolunteerPage() {
+    const [departments, setDepartments] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedDept, setSelectedDept] = useState('');
+
+    useEffect(() => {
+        fetchDepartmentsAndWings();
+    }, []);
+
+    const fetchDepartmentsAndWings = async () => {
+        try {
+            setLoading(true);
+            // Fetch both departments and wings
+            const [deptsResponse, wingsResponse] = await Promise.all([
+                axios.get(`${API_URL}/ministries/get_all.php?type=department&sortKey=name&sortDir=asc`),
+                axios.get(`${API_URL}/ministries/get_all.php?type=wing&sortKey=name&sortDir=asc`)
+            ]);
+
+            // API returns data directly as an array
+            const depts = Array.isArray(deptsResponse.data) ? deptsResponse.data : [];
+            const wings = Array.isArray(wingsResponse.data) ? wingsResponse.data : [];
+            
+            // Combine both and add icons
+            const combined = [...depts, ...wings].map(item => ({
+                ...item,
+                icon: getDeptIcon(item.name, item.type)
+            }));
+            
+            setDepartments(combined);
+            setError(null);
+        } catch (err) {
+            console.error('Error fetching departments and wings:', err);
+            setError('Failed to load opportunities. Please try again later.');
+            setDepartments([]);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleDeptClick = (id) => {
         setSelectedDept(id);
@@ -313,30 +341,61 @@ export default function VolunteerPage() {
                 {/* Departments Grid */}
                 <SectionTitle title="Find Your Fit" subtitle="Opportunities" />
 
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-                    {departments.map((dept, idx) => (
-                        <motion.div
-                            key={dept.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ delay: idx * 0.1 }}
-                            viewport={{ once: true }}
-                            onClick={() => handleDeptClick(dept.id)}
-                            className="cursor-pointer group"
-                        >
-                            <Card className="p-8 h-full transition-all group-hover:border-orange-200 group-hover:shadow-2xl hover:-translate-y-2">
-                                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 bg-orange-50 text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition-colors">
-                                    {dept.icon}
-                                </div>
-                                <h3 className="text-xl font-bold text-gray-900 mb-3">{dept.title}</h3>
-                                <p className="text-gray-500 mb-6">{dept.desc}</p>
-                                <div className="flex items-center gap-2 text-sm font-bold text-orange-600 group-hover:gap-3 transition-all">
-                                    Join Team <ArrowRight size={16} />
-                                </div>
-                            </Card>
-                        </motion.div>
-                    ))}
-                </div>
+                {loading && (
+                    <div className="text-center py-12">
+                        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
+                        <p className="mt-4 text-gray-600">Loading opportunities...</p>
+                    </div>
+                )}
+
+                {error && (
+                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+                        {error}
+                    </div>
+                )}
+
+                {!loading && !error && departments.length === 0 && (
+                    <div className="text-center py-12">
+                        <p className="text-gray-600">No opportunities available at the moment.</p>
+                    </div>
+                )}
+
+                {!loading && !error && departments.length > 0 && (
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+                        {departments.map((dept, idx) => (
+                            <motion.div
+                                key={dept.id}
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                transition={{ delay: idx * 0.1 }}
+                                viewport={{ once: true }}
+                                onClick={() => handleDeptClick(dept.id)}
+                                className="cursor-pointer group"
+                            >
+                                <Card className="p-8 h-full transition-all group-hover:border-orange-200 group-hover:shadow-2xl hover:-translate-y-2">
+                                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 bg-orange-50 text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition-colors">
+                                        {dept.icon}
+                                    </div>
+                                    <h3 className="text-xl font-bold text-gray-900 mb-3">
+                                        {dept.name}
+                                        {dept.type === 'wing' && (
+                                            <span className="ml-2 text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full">Wing</span>
+                                        )}
+                                    </h3>
+                                    <p className="text-gray-500 mb-6">{dept.description || 'Join our team and make a difference!'}</p>
+                                    {dept.leader_name && (
+                                        <div className="flex items-center gap-2 text-sm text-gray-400 mb-4">
+                                            <User size={14} /> Lead: {dept.leader_name}
+                                        </div>
+                                    )}
+                                    <div className="flex items-center gap-2 text-sm font-bold text-orange-600 group-hover:gap-3 transition-all">
+                                        Join Team <ArrowRight size={16} />
+                                    </div>
+                                </Card>
+                            </motion.div>
+                        ))}
+                    </div>
+                )}
 
                 {/* General Application CTA */}
                 <div className="text-center">
@@ -355,6 +414,7 @@ export default function VolunteerPage() {
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 initialDept={selectedDept}
+                departments={departments}
             />
         </div>
     );
