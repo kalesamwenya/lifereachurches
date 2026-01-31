@@ -219,6 +219,8 @@ export default function MessagesDropdown({ isOpen }) {
         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     };
 
+    const isConnected = false; // TODO: Replace with real connection state if using Pusher
+
     if (!isOpen) return null;
 
     return (

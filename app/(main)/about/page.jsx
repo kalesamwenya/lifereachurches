@@ -49,10 +49,14 @@ const team = [
 
 export default function AboutPage() {
     const [churchSettings, setChurchSettings] = useState(null);
+    const [pastor, setPastor] = useState(null);
+    const [ministryLeaders, setMinistryLeaders] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetchChurchSettings();
+        fetchPastor();
+        fetchMinistryLeaders();
     }, []);
 
     const fetchChurchSettings = async () => {
@@ -61,8 +65,30 @@ export default function AboutPage() {
             setChurchSettings(response.data);
         } catch (error) {
             console.error('Error fetching church settings:', error);
+        }
+    };
+
+    const fetchPastor = async () => {
+        try {
+            const response = await axios.get(`${API_URL}/leadership/get.php?type=senior_pastor`);
+            if (response.data.success && response.data.data) {
+                setPastor(response.data.data);
+            }
+        } catch (error) {
+            console.error('Error fetching pastor:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchMinistryLeaders = async () => {
+        try {
+            const response = await axios.get(`${API_URL}/leadership/get.php?type=ministry_leaders`);
+            if (response.data.success && response.data.data) {
+                setMinistryLeaders(response.data.data);
+            }
+        } catch (error) {
+            console.error('Error fetching ministry leaders:', error);
         }
     };
 
@@ -82,6 +108,14 @@ export default function AboutPage() {
     const churchAddress = churchSettings?.address || '';
     const churchEmail = churchSettings?.email || '';
     const churchPhone = churchSettings?.phone || '';
+
+    // Use ministry leaders from DB or fallback to mock data
+    const team = ministryLeaders.length > 0 ? ministryLeaders : [
+        { name: "Mary Poppins", role: "Reach Kids Director", image_url: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=400" },
+        { name: "Mike Chang", role: "Apex Youth Pastor", image_url: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=400" },
+        { name: "David Psalm", role: "Worship Pastor", image_url: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=400" },
+        { name: "Sarah Connect", role: "Groups Director", image_url: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=400" },
+    ];
 
     return (
         <div className="bg-white">
@@ -183,41 +217,74 @@ export default function AboutPage() {
                     </div>
 
                     {/* Senior Pastor Section */}
-                    <div className="mb-32">
+                    {pastor && (
+                        <div className="mb-32">
                         <SectionTitle title="Our Leadership" subtitle="Senior Pastor" />
                         <div className="relative rounded-3xl overflow-hidden shadow-2xl bg-gray-900">
                             <div className="grid md:grid-cols-2">
                                 <div className="h-[500px] md:h-auto relative">
                                     <img
-                                        src="/imgs/pastor.png"
-                                        alt="Pastor Gomezyo Shamane"
+                                        src={pastor.image_url || "/imgs/pastor.png"}
+                                        alt={pastor.name}
                                         className="absolute inset-0 w-full h-full object-cover"
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent md:hidden"></div>
                                 </div>
                                 <div className="p-12 md:p-20 flex flex-col justify-center text-white">
-                                    <h3 className="text-orange-500 font-bold uppercase tracking-widest mb-2">Senior Pastor</h3>
-                                    <h2 className="text-4xl md:text-5xl font-black mb-6">Gomezyo Shamane</h2>
-                                    <p className="text-gray-300 text-lg leading-relaxed mb-6">
-                                        Prophet Gomezyo Shamane is the founder and senior pastor of Life Reach Church. Born on the 12th of January, he grew up and completed his primary and secondary education in Lusaka, Zambia. He is married to Mrs Stacy Shamane who is a co-labourer in the gospel.
-                                    </p>
-                                    <p className="text-gray-300 text-lg leading-relaxed mb-8">
-                                        Prophet Gomezyo Shamane is an auditor by profession as well as an entrepreneur in different industries. He is also currently pursuing his degree in Ministries and Theology.
-                                    </p>
-                                    <p className="text-gray-300 text-lg leading-relaxed mb-8">
-                                        As a minister of the gospel, he is passionate about reaching out to many lives and utilizes various platforms to achieve this including the successful release of books he has authored. Beautiful vs Beauty-fool, The Warrior Within and 5 volumes of a devotional book called The Word-full are Power-full are pieces of literature that deliver uncompromising biblical truths which have encouraged many to walk in their identity and grow in the knowledge of God. Furthermore, all his sermons are available as podcasts on listening platforms including but not limited to Google podcasts and Apple podcasts.
-                                    </p>
-                                    <p className="text-gray-300 text-lg leading-relaxed mb-8">
-                                        Among other gifts, music plays a vital role in his ministry which is to minister to the heart of God and futher reach out to bless the lives of people. The creation of GNS (Gomezyo Nesher Shamane) music saw to the release of the single ‘Your Glory’. In addition to this, Prophet and Mrs Shamane, collectively known as The Shays, released the singles ‘Ichebo Chenu’, ‘Perfect Bride’ and 'Oh my Soul'. The Shays also have a YouTube channel on which the video of the acoustic version of Ichebo Chenu and the Lyric video of Oh my soul is available.
-                                    </p>
+                                    <h3 className="text-orange-500 font-bold uppercase tracking-widest mb-2">{pastor.title || "Senior Pastor"}</h3>
+                                    <h2 className="text-4xl md:text-5xl font-black mb-6">{pastor.name}</h2>
+                                    
+                                    {pastor.bio_paragraph_1 && (
+                                        <p className="text-gray-300 text-lg leading-relaxed mb-6">
+                                            {pastor.bio_paragraph_1}
+                                        </p>
+                                    )}
+                                    
+                                    {pastor.bio_paragraph_2 && (
+                                        <p className="text-gray-300 text-lg leading-relaxed mb-8">
+                                            {pastor.bio_paragraph_2}
+                                        </p>
+                                    )}
+                                    
+                                    {pastor.bio_paragraph_3 && (
+                                        <p className="text-gray-300 text-lg leading-relaxed mb-8">
+                                            {pastor.bio_paragraph_3}
+                                        </p>
+                                    )}
+                                    
+                                    {pastor.bio_paragraph_4 && (
+                                        <p className="text-gray-300 text-lg leading-relaxed mb-8">
+                                            {pastor.bio_paragraph_4}
+                                        </p>
+                                    )}
+                                    
                                     <div className="flex gap-4">
-                                        <button className="text-orange-500 font-bold hover:text-white transition-colors">Follow on Instagram</button>
-                                        <button className="text-orange-500 font-bold hover:text-white transition-colors">Listen to Podcast</button>
+                                        {pastor.instagram_url && (
+                                            <a 
+                                                href={pastor.instagram_url} 
+                                                target="_blank" 
+                                                rel="noopener noreferrer"
+                                                className="text-orange-500 font-bold hover:text-white transition-colors"
+                                            >
+                                                Follow on Instagram
+                                            </a>
+                                        )}
+                                        {pastor.podcast_url && (
+                                            <a 
+                                                href={pastor.podcast_url} 
+                                                target="_blank" 
+                                                rel="noopener noreferrer"
+                                                className="text-orange-500 font-bold hover:text-white transition-colors"
+                                            >
+                                                Listen to Podcast
+                                            </a>
+                                        )}
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                        </div>
+                    )}
 
                     {/* Department Heads */}
                     <SectionTitle title="Ministry Directors" subtitle="Our Team" />
@@ -225,15 +292,26 @@ export default function AboutPage() {
                         {team.map((member, idx) => (
                             <motion.div
                                 key={idx}
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: idx * 0.1 }}
                                 whileHover={{ y: -10 }}
-                                className="group"
+                                className="group text-center"
                             >
-                                <div className="rounded-2xl overflow-hidden mb-6 shadow-lg border border-gray-100 relative">
-                                    <div className="absolute inset-0 bg-orange-600/20 opacity-0 group-hover:opacity-100 transition-opacity z-10"></div>
-                                    <img src={member.img} alt={member.name} className="w-full h-80 object-cover" />
+                                <div className="relative mb-6 mx-auto w-48 h-48">
+                                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-xl"></div>
+                                    <div className="relative w-full h-full rounded-full overflow-hidden border-4 border-white shadow-2xl">
+                                        <img 
+                                            src={member.image_url || member.img || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=400"} 
+                                            alt={member.name} 
+                                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" 
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                    </div>
                                 </div>
-                                <h4 className="text-xl font-bold text-gray-900 text-center">{member.name}</h4>
-                                <p className="text-orange-600 font-medium text-sm text-center uppercase tracking-wide">{member.role}</p>
+                                <h4 className="text-xl font-bold text-gray-900 mb-2">{member.name}</h4>
+                                <p className="text-orange-600 font-semibold text-sm uppercase tracking-wider">{member.title || member.role}</p>
                             </motion.div>
                         ))}
                     </div>
