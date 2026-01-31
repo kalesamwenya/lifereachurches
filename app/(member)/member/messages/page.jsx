@@ -60,7 +60,7 @@ export default function MessagesPage() {
 
     console.log('📡 Subscribing to channel:', selectedChannel.id);
 
-    const channelName = `presence-chat-${selectedChannel.id}`;
+    const channelName = `chat-${selectedChannel.id}`;
     
     const channel = subscribe(channelName, {
       'new-message': (data) => {
@@ -166,8 +166,7 @@ export default function MessagesPage() {
       [selectedChannel.id]: [...(prev[selectedChannel.id] || []), optimisticMessage]
     }));
 
-    // Send via WebSocket
-    wsSeave to database and trigger Pusher
+    // Save to database and trigger Pusher
     try {
       await axios.post(`${API_URL}/chat/send_message.php`, {
         channel_id: selectedChannel.id,
@@ -200,7 +199,8 @@ export default function MessagesPage() {
       }
 
       typingTimeoutRef.current = setTimeout(() => {
-        // Stop typing0);
+        // Stop typing
+      }, 2000);
     }
   };
 
