@@ -34,7 +34,7 @@ export default function HomePage() {
         <VisionMission/>
 
         {/* 3. FEATURED SERMON BRIEF */}
-       <LatestSermon/>
+       {/* <LatestSermon/> */}
 
         {/* 4. MINISTRY HIGHLIGHTS */}
        <MinistryHighlights/>

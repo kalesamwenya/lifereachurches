@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Mail, CheckCheck, Volume2, VolumeX, Hash, Users } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { usePusher } from '@/context/PusherContext';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 
@@ -10,7 +9,6 @@ const API_URL = 'https://content.lifereachchurch.org';
 
 export default function MessagesDropdown({ isOpen }) {
     const { user } = useAuth();
-    const { subscribe, unsubscribe, isConnected } = usePusher();
     const router = useRouter();
     const [messages, setMessages] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
@@ -18,6 +16,7 @@ export default function MessagesDropdown({ isOpen }) {
     const [loading, setLoading] = useState(false);
     const audioRef = useRef(null);
     const previousCountRef = useRef(0);
+    const pollingIntervalRef = useRef(null);
 
     // Load sound preference from localStorage
     useEffect(() => {
@@ -100,48 +99,27 @@ export default function MessagesDropdown({ isOpen }) {
         }
     };
 
-    // Subscribe to Pusher for real-time notifications
+    // Poll for new messages every 5 seconds
     useEffect(() => {
-        if (!user?.id || !isConnected) return;
+        if (!user?.id) return;
 
-        console.log('📡 Subscribing to Pusher channel for user:', user.id);
-
-        const channelName = `private-user-${user.id}`;
-        
-        const channel = subscribe(channelName, {
-            'new-message': (data) => {
-                console.log('📩 New message received:', data);
-                
-                // Refresh messages list
-                fetchUnreadMessages();
-                
-                // Play notification sound
-                if (soundEnabled) {
-                    playNotificationSound();
-                }
-                
-                // Show browser notification
-                if ('Notification' in window && Notification.permission === 'granted') {
-                    new Notification('New Message', {
-                        body: `${data.sender_name}: ${data.message}`,
-                        icon: '/logo.png',
-                        badge: '/logo.png'
-                    });
-                }
-            },
-            'message-read': (data) => {
-                console.log('✅ Message marked as read:', data);
-                fetchUnreadMessages();
-            }
-        });
+        console.log('🔄 Member: Starting message polling for user:', user.id);
 
         // Initial fetch
         fetchUnreadMessages();
 
+        // Poll every 5 seconds
+        pollingIntervalRef.current = setInterval(() => {
+            fetchUnreadMessages();
+        }, 5000);
+
         return () => {
-            unsubscribe(channelName);
+            if (pollingIntervalRef.current) {
+                clearInterval(pollingIntervalRef.current);
+                console.log('🛑 Member: Stopped message polling');
+            }
         };
-    }, [user?.id, isConnected, subscribe, unsubscribe, soundEnabled]);
+    }, [user?.id, soundEnabled]);
 
     const playNotificationSound = () => {
         console.log('🔊 Attempting to play notification sound...', { 

@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { usePusher } from '@/context/PusherContext';
 import axios from 'axios';
 import { Search, Send, Phone, Video, MoreVertical, Smile, Paperclip, MessageSquare, Users, Hash, ArrowLeft } from 'lucide-react';
 
@@ -9,17 +8,14 @@ const API_URL = 'https://content.lifereachchurch.org';
 
 export default function MessagesPage() {
   const { user } = useAuth();
-  const { subscribe, unsubscribe, isConnected } = usePusher();
   const [channels, setChannels] = useState({ public: [], groups: [], dms: [] });
   const [selectedChannel, setSelectedChannel] = useState(null);
   const [messages, setMessages] = useState({});
   const [messageInput, setMessageInput] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
-  const [isTyping, setIsTyping] = useState({});
-  const [onlineUsers, setOnlineUsers] = useState({});
   const messagesEndRef = useRef(null);
-  const typingTimeoutRef = useRef(null);
+  const pollingIntervalRef = useRef(null);
 
   // Fetch channels for this member
   useEffect(() => {
@@ -54,40 +50,24 @@ export default function MessagesPage() {
     fetchChannels();
   }, [user, API_URL]);
 
-  // Subscribe to Pusher for real-time messages
+  // Poll for messages every 3 seconds
   useEffect(() => {
-    if (!isConnected || !user?.id || !selectedChannel) return;
+    if (!user?.id || !selectedChannel) return;
 
-    console.log('📡 Subscribing to channel:', selectedChannel.id);
+    console.log('🔄 Starting polling for:', selectedChannel.id);
 
-    const channelName = `chat-${selectedChannel.id}`;
-    
-    const channel = subscribe(channelName, {
-      'new-message': (data) => {
-        console.log('💬 New message received:', data);
-        
-        // Fetch fresh messages
-        fetchMessagesForChannel(selectedChannel.id);
-      },
-      'typing': (data) => {
-        if (data.user_id !== user.id) {
-          setIsTyping(prev => ({ ...prev, [selectedChannel.id]: data.user_name }));
-          
-          setTimeout(() => {
-            setIsTyping(prev => {
-              const updated = { ...prev };
-              delete updated[selectedChannel.id];
-              return updated;
-            });
-          }, 3000);
-        }
-      }
-    });
+    // Poll every 3 seconds
+    pollingIntervalRef.current = setInterval(() => {
+      fetchMessagesForChannel(selectedChannel.id);
+    }, 3000);
 
     return () => {
-      unsubscribe(channelName);
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        console.log('🛑 Stopped polling');
+      }
     };
-  }, [isConnected, user?.id, selectedChannel, subscribe, unsubscribe]);
+  }, [user?.id, selectedChannel]);
 
   const fetchMessagesForChannel = async (channelId) => {
     try {
@@ -142,7 +122,7 @@ export default function MessagesPage() {
   }, [messages, selectedChannel]);
 
   const handleSendMessage = async () => {
-    if (!messageInput.trim() || !selectedChannel || !isConnected) return;
+    if (!messageInput.trim() || !selectedChannel) return;
 
     const firstName = user.first_name || user.firstName || '';
     const lastName = user.last_name || user.lastName || '';
@@ -168,40 +148,28 @@ export default function MessagesPage() {
 
     // Save to database and trigger Pusher
     try {
-      await axios.post(`${API_URL}/chat/send_message.php`, {
+      const response = await axios.post(`${API_URL}/chat/send_message_simple.php`, {
         channel_id: selectedChannel.id,
         sender_id: user.id,
         content: messageInput
       });
       
-      console.log('✅ Message sent successfully');
+      console.log('✅ Message sent successfully:', response.data);
     } catch (error) {
       console.error('Failed to save message:', error);
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
+      console.error('Full error object:', JSON.stringify(error, null, 2));
+      
+      // Show error to user
+      const errorMsg = error.response?.data?.message || 
+                      error.response?.data?.error || 
+                      error.message || 
+                      'Unknown error - check console for details';
+      alert('Failed to send message: ' + errorMsg);
     }
 
     setMessageInput('');
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-  };
-
-  const handleTyping = (e) => {
-    setMessageInput(e.target.value);
-
-    if (selectedChannel && isConnected) {
-      const fullName = `${user.first_name || user.firstName || ''} ${user.last_name || user.lastName || ''}`.trim() || 'Member';
-      
-      // Trigger typing event via Pusher channel event
-      // Note: This would need to be implemented as a client event on presence channel
-      
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
-
-      typingTimeoutRef.current = setTimeout(() => {
-        // Stop typing
-      }, 2000);
-    }
   };
 
   const handleKeyPress = (e) => {
@@ -320,7 +288,7 @@ export default function MessagesPage() {
                 <div>
                   <h3 className="font-bold text-gray-900">{selectedChannel.name}</h3>
                   <p className="text-xs text-gray-500">
-                    {isTyping[selectedChannel.id] ? 'typing...' : selectedChannel.description || selectedChannel.category}
+                    {selectedChannel.description || selectedChannel.category}
                   </p>
                 </div>
               </div>
@@ -376,18 +344,6 @@ export default function MessagesPage() {
                   );
                 })
               )}
-              {isTyping[selectedChannel.id] && (
-                <div className="flex items-start gap-3">
-                  <div className="text-xs text-gray-500">
-                    {isTyping[selectedChannel.id]} is typing
-                    <span className="inline-flex ml-1">
-                      <span className="animate-bounce">.</span>
-                      <span className="animate-bounce delay-100">.</span>
-                      <span className="animate-bounce delay-200">.</span>
-                    </span>
-                  </div>
-                </div>
-              )}
               <div ref={messagesEndRef} />
             </div>
 
@@ -397,7 +353,7 @@ export default function MessagesPage() {
                 <div className="flex-1">
                   <textarea
                     value={messageInput}
-                    onChange={handleTyping}
+                    onChange={(e) => setMessageInput(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Type a message..."
                     rows={1}
