@@ -1,16 +1,15 @@
 "use client";
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import io from 'socket.io-client';
+import { usePusher } from '@/context/PusherContext';
 import axios from 'axios';
 import { Search, Send, Phone, Video, MoreVertical, Smile, Paperclip, MessageSquare, Users, Hash, ArrowLeft } from 'lucide-react';
 
 const API_URL = 'https://content.lifereachchurch.org';
-const SOCKET_URL = 'http://localhost:4000';
 
 export default function MessagesPage() {
   const { user } = useAuth();
-  const [socket, setSocket] = useState(null);
+  const { subscribe, unsubscribe, isConnected } = usePusher();
   const [channels, setChannels] = useState({ public: [], groups: [], dms: [] });
   const [selectedChannel, setSelectedChannel] = useState(null);
   const [messages, setMessages] = useState({});
@@ -55,78 +54,60 @@ export default function MessagesPage() {
     fetchChannels();
   }, [user, API_URL]);
 
-  // Initialize Socket.IO
+  // Subscribe to Pusher for real-time messages
   useEffect(() => {
-    if (!user?.id) return;
+    if (!isConnected || !user?.id || !selectedChannel) return;
 
-    const newSocket = io('http://localhost:4000', {
-      transports: ['websocket'],
-      reconnection: true,
-    });
+    console.log('📡 Subscribing to channel:', selectedChannel.id);
 
-    newSocket.on('connect', () => {
-      console.log('✅ Connected to chat server');
-      
-      const fullName = `${user.first_name || user.firstName || ''} ${user.last_name || user.lastName || ''}`.trim();
-      
-      newSocket.emit('authenticate', {
-        userId: user.id,
-        username: fullName || 'Member',
-        token: localStorage.getItem('auth_token')
-      });
-
-      newSocket.emit('join_room', 'general');
-    });
-
-    // Listen for message notifications (no content for security)
-    newSocket.on('message_notification', async (data) => {
-      console.log('🔔 Notification received for channel:', data.channel_id);
-      
-      // Fetch messages from database
-      try {
-        const response = await axios.get(`${API_URL}/chat/member_messages.php`, {
-          params: { 
-            channel_id: data.channel_id,
-            member_id: user.id
-          }
-        });
-
-        if (response.data.messages) {
-          setMessages(prev => ({
-            ...prev,
-            [data.channel_id]: response.data.messages
-          }));
-          console.log('✅ Messages fetched from database');
+    const channelName = `presence-chat-${selectedChannel.id}`;
+    
+    const channel = subscribe(channelName, {
+      'new-message': (data) => {
+        console.log('💬 New message received:', data);
+        
+        // Fetch fresh messages
+        fetchMessagesForChannel(selectedChannel.id);
+      },
+      'typing': (data) => {
+        if (data.user_id !== user.id) {
+          setIsTyping(prev => ({ ...prev, [selectedChannel.id]: data.user_name }));
+          
+          setTimeout(() => {
+            setIsTyping(prev => {
+              const updated = { ...prev };
+              delete updated[selectedChannel.id];
+              return updated;
+            });
+          }, 3000);
         }
-      } catch (error) {
-        console.error('Failed to fetch messages after notification:', error);
       }
     });
-
-    newSocket.on('user_typing', ({ channelId, userId, username }) => {
-      if (userId !== user.id) {
-        setIsTyping(prev => ({ ...prev, [channelId]: username }));
-      }
-    });
-
-    newSocket.on('user_stopped_typing', ({ channelId, userId }) => {
-      setIsTyping(prev => {
-        const updated = { ...prev };
-        delete updated[channelId];
-        return updated;
-      });
-    });
-
-    newSocket.on('online_users', (users) => {
-      setOnlineUsers(users);
-    });
-
-    setSocket(newSocket);
 
     return () => {
-      newSocket.disconnect();
+      unsubscribe(channelName);
     };
-  }, [user]);
+  }, [isConnected, user?.id, selectedChannel, subscribe, unsubscribe]);
+
+  const fetchMessagesForChannel = async (channelId) => {
+    try {
+      const response = await axios.get(`${API_URL}/chat/member_messages.php`, {
+        params: { 
+          channel_id: channelId,
+          member_id: user.id
+        }
+      });
+
+      if (response.data.messages) {
+        setMessages(prev => ({
+          ...prev,
+          [channelId]: response.data.messages
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to fetch messages:', error);
+    }
+  };
 
   // Fetch messages when channel changes
   useEffect(() => {
@@ -153,20 +134,15 @@ export default function MessagesPage() {
     };
 
     fetchMessages();
-
-    // Join the room
-    if (socket) {
-      socket.emit('join_room', selectedChannel.id);
-    }
-  }, [selectedChannel, user, socket, API_URL]);
+  }, [selectedChannel, user, API_URL]);
 
   // Scroll to bottom on new messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, selectedChannel]);
 
-  const handleSendMessage = () => {
-    if (!messageInput.trim() || !selectedChannel || !socket) return;
+  const handleSendMessage = async () => {
+    if (!messageInput.trim() || !selectedChannel || !isConnected) return;
 
     const firstName = user.first_name || user.firstName || '';
     const lastName = user.last_name || user.lastName || '';
@@ -190,13 +166,19 @@ export default function MessagesPage() {
       [selectedChannel.id]: [...(prev[selectedChannel.id] || []), optimisticMessage]
     }));
 
-    socket.emit('send_message', {
-      channel: selectedChannel.id,
-      message: messageInput,
-      userId: user.id,
-      username: fullName,
-      initials: initials
-    });
+    // Send via WebSocket
+    wsSeave to database and trigger Pusher
+    try {
+      await axios.post(`${API_URL}/chat/send_message.php`, {
+        channel_id: selectedChannel.id,
+        sender_id: user.id,
+        content: messageInput
+      });
+      
+      console.log('✅ Message sent successfully');
+    } catch (error) {
+      console.error('Failed to save message:', error);
+    }
 
     setMessageInput('');
     if (typingTimeoutRef.current) {
@@ -207,25 +189,18 @@ export default function MessagesPage() {
   const handleTyping = (e) => {
     setMessageInput(e.target.value);
 
-    if (selectedChannel && socket) {
+    if (selectedChannel && isConnected) {
       const fullName = `${user.first_name || user.firstName || ''} ${user.last_name || user.lastName || ''}`.trim() || 'Member';
       
-      socket.emit('typing', {
-        channelId: selectedChannel.id,
-        userId: user.id,
-        username: fullName
-      });
-
+      // Trigger typing event via Pusher channel event
+      // Note: This would need to be implemented as a client event on presence channel
+      
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
 
       typingTimeoutRef.current = setTimeout(() => {
-        socket.emit('stop_typing', {
-          channelId: selectedChannel.id,
-          userId: user.id
-        });
-      }, 2000);
+        // Stop typing0);
     }
   };
 

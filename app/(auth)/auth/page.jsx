@@ -136,8 +136,8 @@ function AuthForm() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 pt-32">
-            <div className="max-w-5xl w-full bg-white rounded-[2rem] shadow-2xl overflow-hidden grid md:grid-cols-2">
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-0 sm:p-6 sm:pt-32">
+            <div className="max-w-5xl w-full h-screen sm:h-auto bg-white rounded-none sm:rounded-[2rem] shadow-none sm:shadow-2xl overflow-hidden grid md:grid-cols-2">
                 
                 {/* Visual Side */}
                 <div className="bg-gray-900 p-12 text-white flex flex-col justify-center relative overflow-hidden">
@@ -188,7 +188,7 @@ function AuthForm() {
                                         type="text" 
                                         value={fullName}
                                         onChange={(e) => setFullName(e.target.value)}
-                                        className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none transition-all" 
+                                        className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none transition-all text-gray-900" 
                                         placeholder="John Doe"
                                         required
                                     />
@@ -206,7 +206,7 @@ function AuthForm() {
                                         type="email" 
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none transition-all" 
+                                        className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none transition-all text-gray-900" 
                                         placeholder="name@email.com"
                                         required
                                     />
@@ -225,7 +225,7 @@ function AuthForm() {
                                             type="email" 
                                             value={email}
                                             onChange={(e) => setEmail(e.target.value)}
-                                            className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none transition-all" 
+                                            className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none transition-all text-gray-900" 
                                             placeholder="name@email.com"
                                             required
                                         />
@@ -239,7 +239,7 @@ function AuthForm() {
                                             type="text" 
                                             value={verificationCode}
                                             onChange={(e) => setVerificationCode(e.target.value)}
-                                            className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none transition-all text-center text-2xl tracking-widest font-bold" 
+                                            className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none transition-all text-center text-2xl tracking-widest font-bold text-gray-900" 
                                             placeholder="000000"
                                             maxLength={6}
                                             required
@@ -261,7 +261,7 @@ function AuthForm() {
                                         type="password" 
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none transition-all" 
+                                        className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none transition-all text-gray-900" 
                                         placeholder="••••••••"
                                         required
                                     />
@@ -279,7 +279,7 @@ function AuthForm() {
                                         type="password" 
                                         value={confirmPassword}
                                         onChange={(e) => setConfirmPassword(e.target.value)}
-                                        className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none transition-all" 
+                                        className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none transition-all text-gray-900" 
                                         placeholder="••••••••"
                                         required
                                     />

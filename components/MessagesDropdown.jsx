@@ -116,7 +116,9 @@ export default function MessagesDropdown({ isOpen }) {
                 fetchUnreadMessages();
                 
                 // Play notification sound
-                playNotificationSound();
+                if (soundEnabled) {
+                    playNotificationSound();
+                }
                 
                 // Show browser notification
                 if ('Notification' in window && Notification.permission === 'granted') {

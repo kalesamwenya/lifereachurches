@@ -1,0 +1,161 @@
+"use client";
+import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { useAuth } from './AuthContext';
+
+const API_URL = 'https://content.lifereachchurch.org';
+
+const ChatContext = createContext();
+
+export function ChatProvider({ children }) {
+  const { user } = useAuth();
+  const [messages, setMessages] = useState({});
+  const [channels, setChannels] = useState([]);
+  const [activeChannel, setActiveChannel] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isTyping, setIsTyping] = useState({});
+  const [notificationSound, setNotificationSound] = useState(null);
+
+  // Chat now uses Pusher directly in message pages
+  // This context provides minimal shared state
+
+  // Load notification sound
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const { createNotificationSound } = require('@/utils/notificationSound');
+      const audio = createNotificationSound();
+      setNotificationSound(audio);
+    }
+  }, []);
+
+  // Fetch channels
+  const fetchChannels = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      const response = await fetch(`${API_URL}/chat/channels.php?user_id=${user.id}`);
+      const data = await response.json();
+      
+      if (data.channels) {
+        setChannels(data.channels);
+      }
+    } catch (error) {
+      console.error('Failed to fetch channels:', error);
+    }
+  }, [user]);
+
+  // Fetch messages for a channel
+  const fetchMessages = useCallback(async (channelId) => {
+    try {
+      const response = await fetch(`${API_URL}/chat/messages.php?channel_id=${channelId}&limit=50`);
+      const data = await response.json();
+      
+      if (data.messages) {
+        setMessages(prev => ({
+          ...prev,
+          [channelId]: data.messages
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to fetch messages:', error);
+    }
+  }, []);
+
+  // Create or get channel
+  const createChannel = useCallback(async (recipientId, recipientName) => {
+    if (!user) return null;
+
+    try {
+      const response = await fetch(`${API_URL}/chat/channels.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user1_id: user.id,
+          user2_id: recipientId,
+          type: 'dm',
+          name: recipientName
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.channel_id) {
+        // Refresh channels
+        await fetchChannels();
+        return data.channel_id;
+      }
+    } catch (error) {
+      console.error('Failed to create channel:', error);
+    }
+    return null;
+  }, [user, fetchChannels]);
+
+  // Send message
+  const sendMessage = useCallback((channelId, content, recipientId) => {
+    if (!socket || !user) return;
+
+    socket.emit('send_direct_message', {
+      recipientId,
+      channelId,
+      message: content
+    });
+
+    // Optimistically add message to UI
+    const newMessage = {
+      id: Date.now(),
+      channelId,
+      senderId: user.id,
+      senderName: `${user.firstName} ${user.lastName}`,
+      content,
+      timestamp: new Date().toISOString()
+    };
+
+    setMessages(prev => ({
+      ...prev,
+      [channelId]: [...(prev[channelId] || []), newMessage]
+    }));
+  }, [socket, user]);
+
+  // Typing indicators
+  const startTyping = useCallback((channelId, recipientId) => {
+    if (!socket) return;
+    socket.emit('typing', { channelId, recipientId });
+  }, [socket]);
+
+  const stopTyping = useCallback((channelId, recipientId) => {
+    if (!socket) return;
+    socket.emit('stop_typing', { channelId, recipientId });
+  }, [socket]);
+
+  // Mark channel as read
+  const markAsRead = useCallback((channelId) => {
+    setActiveChannel(channelId);
+    setUnreadCount(0);
+  }, []);
+
+  const value = {
+    socket,
+    messages,
+    channels,
+    activeChannel,
+    unreadCount,
+    isTyping,
+    onlineUsers,
+    fetchChannels,
+    fetchMessages,
+    createChannel,
+    sendMessage,
+    startTyping,
+    stopTyping,
+    markAsRead
+  };
+
+  return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
+}
+
+export function useChat() {
+  const context = useContext(ChatContext);
+  if (!context) {
+    throw new Error('useChat must be used within ChatProvider');
+  }
+  return context;
+}

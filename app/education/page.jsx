@@ -88,15 +88,26 @@ export default function EducationPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-brand-400 to-brand-100 text-brand-500 py-16 h-[100vh] w-full flex flex-col justify-center items-center">
-        <div className="max-w-7xl mx-auto px-6">
+      <div className="relative py-16 h-[100vh] w-full flex flex-col justify-center items-center overflow-hidden">
+        {/* Background Image */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center z-0"
+          style={{
+            backgroundImage: 'url("/imgs/SHIFT2025 339.jpg")'
+          }}
+        >
+          {/* Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-brand-600/70 to-black/60"></div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center"
           >
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">Education & Learning</h1>
-            <p className="text-xl text-gray-200 max-w-2xl mx-auto">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white">Education & Learning</h1>
+            <p className="text-xl text-gray-100 max-w-2xl mx-auto">
               Grow in faith and knowledge through our comprehensive courses and teachings
             </p>
           </motion.div>

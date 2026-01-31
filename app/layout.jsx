@@ -13,7 +13,7 @@ export const viewport = {
 };
 
 export const metadata = {
-    metadataBase: new URL('https://lifereach.church'), // Replace with actual domain in production
+    metadataBase: new URL('https://lifereachchurch.org'), // Replace with actual domain in production
     title: {
         default: 'Life Reach Church | Reaching Every Soul',
         template: '%s | Life Reach Church',
@@ -32,13 +32,13 @@ export const metadata = {
     openGraph: {
         title: 'Life Reach Church | Reaching Every Soul',
         description: 'We are a movement dedicated to showing the world that Jesus is alive. Join us for Sunday services at 9AM & 11AM.',
-        url: 'https://lifereach.church',
+        url: 'https://lifereachchurch.org',
         siteName: 'Life Reach Church',
         locale: 'en_US', // or 'en_ZM'
         type: 'website',
         images: [
             {
-                url: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=1200',
+                url: '/imgs/SHIFT2025-212.jpg',
                 width: 1200,
                 height: 630,
                 alt: 'Life Reach Church Worship Service',
@@ -50,7 +50,7 @@ export const metadata = {
         card: 'summary_large_image',
         title: 'Life Reach Church',
         description: 'Reaching the lost, Raising disciples, and Releasing leaders. Join the movement.',
-        images: ['https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=1200'],
+        images: ['/imgs/SHIFT2025-212.jpg'],
         creator: '@lifereachchurch',
     },
     // Search Engine Crawlers
@@ -66,8 +66,8 @@ export const metadata = {
         },
     },
     icons: {
-        icon: 'public/logo.png', // Points to app/icon.png or public/icon.png
-        apple: 'public/logo.png',
+        icon: '/logo.png', // Points to app/icon.png or public/icon.png
+        apple: '/logo.png',
     },
     manifest: '/manifest.json',
 };

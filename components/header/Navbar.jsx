@@ -124,7 +124,7 @@ export default function Navbar() {
                     <a href="/events" className={`font-semibold text-sm uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/events' ? 'text-orange-500' : (isSolid ? 'text-gray-600' : 'text-gray-200')}`}>Events</a>
                     <a href="/live" className={`font-semibold text-sm uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/live' ? 'text-orange-500' : (isSolid ? 'text-gray-600' : 'text-gray-200')}`}>Live</a>
                     <a href="/contact" className={`font-semibold text-sm uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/contact' ? 'text-orange-500' : (isSolid ? 'text-gray-600' : 'text-gray-200')}`}>Contact</a>
-                     <a href="/education" className={`font-semibold text-sm uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/education' ? 'text-orange-500' : (isSolid ? 'text-gray-600' : 'text-gray-200')}`}>Learn</a>
+                    <a href="/education" className={`font-semibold text-sm uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/education' ? 'text-orange-500' : (isSolid ? 'text-gray-600' : 'text-gray-200')}`}>Learn</a>
 
                     <div className="flex items-center gap-3 ml-2">
                         <a href="/plan-visit">
@@ -253,6 +253,7 @@ export default function Navbar() {
                             </div>
 
                             <a href="/contact" className="text-2xl font-bold text-gray-900 border-b border-gray-100 pb-4">Contact</a>
+                            <a href="/education" className={`text-2xl font-bold uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/education' ? 'text-orange-500' : (isSolid ? 'text-gray-600' : 'text-gray-200')}`}>Learn</a>
                             <a href="/plan-visit" className="text-2xl font-bold text-orange-600">Plan A Visit</a>
 
                             <div className="grid grid-cols-2 gap-4 mt-8">

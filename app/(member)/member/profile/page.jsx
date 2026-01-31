@@ -14,6 +14,7 @@ export default function Profile() {
   const [message, setMessage] = useState({ type: '', text: '' });
   const [userData, setUserData] = useState(null);
   const [editedData, setEditedData] = useState(null);
+  const [isUploadingPicture, setIsUploadingPicture] = useState(false);
 
   useEffect(() => {
     if (user?.id) {
@@ -79,6 +80,65 @@ export default function Profile() {
     setMessage({ type: '', text: '' });
   };
 
+  const handleProfilePictureUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      setMessage({ type: 'error', text: 'Please select a valid image file (JPEG, PNG, GIF, or WebP)' });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage({ type: 'error', text: 'File size must be less than 5MB' });
+      return;
+    }
+
+    setIsUploadingPicture(true);
+    setMessage({ type: '', text: '' });
+
+    try {
+      const formData = new FormData();
+      formData.append('profile_picture', file);
+      formData.append('user_id', user.id);
+
+      const response = await axios.post(
+        `${API_URL}/members/upload_profile_picture.php`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+
+      if (response.data.success) {
+        // Update userData with new avatar URL
+        const newAvatarUrl = response.data.avatar_url;
+        setUserData(prev => ({
+          ...prev,
+          avatar_url: newAvatarUrl
+        }));
+        setEditedData(prev => ({
+          ...prev,
+          avatar_url: newAvatarUrl
+        }));
+        setMessage({ type: 'success', text: 'Profile picture updated successfully!' });
+        setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+      } else {
+        setMessage({ type: 'error', text: response.data.message || 'Failed to upload profile picture' });
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      setMessage({ type: 'error', text: error.response?.data?.message || 'Failed to upload profile picture' });
+    } finally {
+      setIsUploadingPicture(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
@@ -116,14 +176,37 @@ export default function Profile() {
         
         <div className="relative flex flex-col md:flex-row items-center md:items-start gap-6">
           <div className="relative group">
-            <img 
-              src={userData.avatar_url || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400"}
-              className="w-32 h-32 rounded-3xl object-cover border-4 border-white/20 shadow-2xl"
-              alt="Profile" 
+            {userData.avatar_url ? (
+              <img 
+                src={`${API_URL}${userData.avatar_url}`}
+                className="w-32 h-32 rounded-3xl object-cover border-4 border-white/20 shadow-2xl"
+                alt="Profile" 
+              />
+            ) : (
+              <div className="w-32 h-32 rounded-3xl bg-white/20 border-4 border-white/20 shadow-2xl flex items-center justify-center">
+                <span className="text-4xl font-bold text-white">
+                  {userData.first_name?.[0]}{userData.last_name?.[0]}
+                </span>
+              </div>
+            )}
+            <label
+              htmlFor="profile-picture-upload"
+              className="absolute bottom-2 right-2 bg-white text-orange-600 p-2 rounded-xl shadow-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+            >
+              {isUploadingPicture ? (
+                <Loader2 className="animate-spin" size={18} />
+              ) : (
+                <Camera size={18} />
+              )}
+            </label>
+            <input
+              id="profile-picture-upload"
+              type="file"
+              accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+              onChange={handleProfilePictureUpload}
+              className="hidden"
+              disabled={isUploadingPicture}
             />
-            <button className="absolute bottom-2 right-2 bg-white text-orange-600 p-2 rounded-xl shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
-              <Camera size={18} />
-            </button>
           </div>
 
           <div className="text-center md:text-left flex-1">
