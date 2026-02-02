@@ -38,7 +38,7 @@ export const metadata = {
         type: 'website',
         images: [
             {
-                url: '/imgs/SHIFT2025-212.jpg',
+                url: 'https://lifereachchurch.org/imgs/SHIFT2025-212.jpg',
                 width: 1200,
                 height: 630,
                 alt: 'Life Reach Church Worship Service',
@@ -50,7 +50,7 @@ export const metadata = {
         card: 'summary_large_image',
         title: 'Life Reach Church',
         description: 'Reaching the lost, Raising disciples, and Releasing leaders. Join the movement.',
-        images: ['/imgs/SHIFT2025-212.jpg'],
+        images: ['https://lifereachchurch.org/imgs/SHIFT2025-212.jpg'],
         creator: '@lifereachchurch',
     },
     // Search Engine Crawlers
@@ -66,8 +66,8 @@ export const metadata = {
         },
     },
     icons: {
-        icon: '/logo.png', // Points to app/icon.png or public/icon.png
-        apple: '/logo.png',
+        icon: 'https://lifereachchurch.org/logo.png', // Points to app/icon.png or public/icon.png
+        apple: 'https://lifereachchurch.org/logo.png',
     },
     manifest: '/manifest.json',
 };

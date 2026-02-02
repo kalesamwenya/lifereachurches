@@ -10,6 +10,7 @@ export default function NotFound() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-gray-50 flex items-center justify-center p-6">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8 text-center">
+        <img src="/imgs/pastor.png" alt="Lifereach Church Logo" className="mx-auto mb-4 w-20 h-20 rounded-full shadow-lg object-cover" />
         <div className="text-9xl font-black text-orange-600 mb-4">404</div>
 
         <h1 className="text-3xl font-bold text-gray-900 mb-4">Page Not Found</h1>

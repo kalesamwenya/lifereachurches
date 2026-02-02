@@ -13,6 +13,7 @@ export default function Error({ error, reset }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-gray-50 flex items-center justify-center p-6">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8 text-center">
+        <img src="/imgs/pastor.png" alt="Lifereach Church Logo" className="mx-auto mb-4 w-20 h-20 rounded-full shadow-lg object-cover" />
         <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
           <AlertTriangle size={40} className="text-red-600" />
         </div>

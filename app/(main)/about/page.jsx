@@ -1,11 +1,79 @@
+
 'use client';
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Sun, MapPin, Users, BookOpen, Shield, Gift } from 'lucide-react';
+import { Sun, MapPin, Users, BookOpen, Shield, Gift, ChevronLeft, ChevronRight } from 'lucide-react';
 import axios from 'axios';
 
 const API_URL = 'https://content.lifereachchurch.org';
+
+// --- Carousel for Core Values ---
+function CoreValuesCarousel({ values }) {
+    const [start, setStart] = React.useState(0);
+    const cardsPerSlide = 4;
+    const total = values.length;
+    const canPrev = start > 0;
+    const canNext = start + cardsPerSlide < total;
+
+    // Responsive: 1 on mobile, 2 on md, 4 on lg+
+    React.useEffect(() => {
+        function handleResize() {
+            if (window.innerWidth < 768) {
+                setStart(0);
+            } else if (window.innerWidth < 1024 && start > total - 2) {
+                setStart(Math.max(0, total - 2));
+            } else if (window.innerWidth >= 1024 && start > total - 4) {
+                setStart(Math.max(0, total - 4));
+            }
+        }
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [start, total]);
+
+    // Determine cards per slide based on screen size
+    let visible = cardsPerSlide;
+    if (typeof window !== 'undefined') {
+        if (window.innerWidth < 768) visible = 1;
+        else if (window.innerWidth < 1024) visible = 2;
+    }
+    const end = Math.min(start + visible, total);
+    const shown = values.slice(start, end);
+
+    return (
+        <div className="relative mb-32">
+            <div className="flex items-center justify-between mb-6">
+                <button
+                    className={`p-2 rounded-full bg-orange-100 text-orange-600 hover:bg-orange-200 transition disabled:opacity-30 disabled:cursor-not-allowed`}
+                    onClick={() => setStart(s => Math.max(0, s - visible))}
+                    disabled={!canPrev}
+                    aria-label="Previous"
+                >
+                    <ChevronLeft size={28} />
+                </button>
+                <button
+                    className={`p-2 rounded-full bg-orange-100 text-orange-600 hover:bg-orange-200 transition disabled:opacity-30 disabled:cursor-not-allowed`}
+                    onClick={() => setStart(s => Math.min(total - visible, s + visible))}
+                    disabled={!canNext}
+                    aria-label="Next"
+                >
+                    <ChevronRight size={28} />
+                </button>
+            </div>
+            <div className="flex gap-6 overflow-x-auto no-scrollbar">
+                {shown.map((val, idx) => (
+                    <Card key={idx + start} className="p-8 text-center h-full min-w-[220px] flex-1">
+                        <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                            {val.icon}
+                        </div>
+                        <h4 className="text-xl font-bold mb-3">{val.title}</h4>
+                        <p className="text-gray-600 text-sm leading-relaxed">{val.desc}</p>
+                    </Card>
+                ))}
+            </div>
+        </div>
+    );
+}
 
 // --- Local Components (Inlined for consistency) ---
 
@@ -203,18 +271,6 @@ export default function AboutPage() {
                     </div>
 
                     {/* Core Values */}
-                    <SectionTitle title="What We Believe" subtitle="Our Core Values" />
-                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-32">
-                        {values.map((val, idx) => (
-                            <Card key={idx} className="p-8 text-center h-full">
-                                <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                                    {val.icon}
-                                </div>
-                                <h4 className="text-xl font-bold mb-3">{val.title}</h4>
-                                <p className="text-gray-600 text-sm leading-relaxed">{val.desc}</p>
-                            </Card>
-                        ))}
-                    </div>
 
                     {/* Senior Pastor Section */}
                     {pastor && (
