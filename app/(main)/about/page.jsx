@@ -1,81 +1,13 @@
-
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useState, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Sun, MapPin, Users, BookOpen, Shield, Gift, ChevronLeft, ChevronRight } from 'lucide-react';
 import axios from 'axios';
 
 const API_URL = 'https://content.lifereachchurch.org';
 
-// --- Carousel for Core Values ---
-function CoreValuesCarousel({ values }) {
-    const [start, setStart] = React.useState(0);
-    const cardsPerSlide = 4;
-    const total = values.length;
-    const canPrev = start > 0;
-    const canNext = start + cardsPerSlide < total;
-
-    // Responsive: 1 on mobile, 2 on md, 4 on lg+
-    React.useEffect(() => {
-        function handleResize() {
-            if (window.innerWidth < 768) {
-                setStart(0);
-            } else if (window.innerWidth < 1024 && start > total - 2) {
-                setStart(Math.max(0, total - 2));
-            } else if (window.innerWidth >= 1024 && start > total - 4) {
-                setStart(Math.max(0, total - 4));
-            }
-        }
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, [start, total]);
-
-    // Determine cards per slide based on screen size
-    let visible = cardsPerSlide;
-    if (typeof window !== 'undefined') {
-        if (window.innerWidth < 768) visible = 1;
-        else if (window.innerWidth < 1024) visible = 2;
-    }
-    const end = Math.min(start + visible, total);
-    const shown = values.slice(start, end);
-
-    return (
-        <div className="relative mb-32">
-            <div className="flex items-center justify-between mb-6">
-                <button
-                    className={`p-2 rounded-full bg-orange-100 text-orange-600 hover:bg-orange-200 transition disabled:opacity-30 disabled:cursor-not-allowed`}
-                    onClick={() => setStart(s => Math.max(0, s - visible))}
-                    disabled={!canPrev}
-                    aria-label="Previous"
-                >
-                    <ChevronLeft size={28} />
-                </button>
-                <button
-                    className={`p-2 rounded-full bg-orange-100 text-orange-600 hover:bg-orange-200 transition disabled:opacity-30 disabled:cursor-not-allowed`}
-                    onClick={() => setStart(s => Math.min(total - visible, s + visible))}
-                    disabled={!canNext}
-                    aria-label="Next"
-                >
-                    <ChevronRight size={28} />
-                </button>
-            </div>
-            <div className="flex gap-6 overflow-x-auto no-scrollbar">
-                {shown.map((val, idx) => (
-                    <Card key={idx + start} className="p-8 text-center h-full min-w-[220px] flex-1">
-                        <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                            {val.icon}
-                        </div>
-                        <h4 className="text-xl font-bold mb-3">{val.title}</h4>
-                        <p className="text-gray-600 text-sm leading-relaxed">{val.desc}</p>
-                    </Card>
-                ))}
-            </div>
-        </div>
-    );
-}
-
-// --- Local Components (Inlined for consistency) ---
+// --- Local Components ---
 
 const SectionTitle = ({ title, subtitle, centered = true }) => (
     <motion.div
@@ -90,29 +22,92 @@ const SectionTitle = ({ title, subtitle, centered = true }) => (
     </motion.div>
 );
 
-const Card = ({ children, className = "" }) => (
-    <motion.div
-        whileHover={{ y: -5 }}
-        className={`bg-white rounded-3xl shadow-xl shadow-gray-200/50 overflow-hidden ${className}`}
-    >
-        {children}
-    </motion.div>
-);
+// --- Redesigned Multi-Card Carousel Component ---
+
+const ValuesCarousel = ({ values }) => {
+    const scrollRef = useRef(null);
+
+    const scroll = (direction) => {
+        if (scrollRef.current) {
+            const { scrollLeft, clientWidth } = scrollRef.current;
+            const scrollTo = direction === 'left' 
+                ? scrollLeft - clientWidth 
+                : scrollLeft + clientWidth;
+            
+            scrollRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
+        }
+    };
+
+    return (
+        <div className="relative group px-4 md:px-0 mb-32">
+            {/* Desktop Navigation Arrows */}
+            <button 
+                onClick={() => scroll('left')}
+                className="absolute -left-6 top-1/2 -translate-y-1/2 z-10 p-3 rounded-full bg-white shadow-xl text-orange-600 hover:bg-orange-600 hover:text-white transition-all opacity-0 group-hover:opacity-100 hidden lg:block"
+            >
+                <ChevronLeft size={28} />
+            </button>
+            <button 
+                onClick={() => scroll('right')}
+                className="absolute -right-6 top-1/2 -translate-y-1/2 z-10 p-3 rounded-full bg-white shadow-xl text-orange-600 hover:bg-orange-600 hover:text-white transition-all opacity-0 group-hover:opacity-100 hidden lg:block"
+            >
+                <ChevronRight size={28} />
+            </button>
+
+            {/* Carousel Container */}
+            <div 
+                ref={scrollRef}
+                className="flex gap-4 md:gap-6 overflow-x-auto snap-x snap-mandatory no-scrollbar pb-8"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+                {values.map((val, idx) => (
+                    <motion.div
+                        key={idx}
+                        className="min-w-[calc(50%-8px)] lg:min-w-[calc(25%-18px)] snap-start"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: idx * 0.05 }}
+                    >
+                        <div className="bg-white h-full p-6 md:p-8 rounded-[2.5rem] shadow-xl shadow-gray-200/50 border border-gray-50 flex flex-col items-center text-center hover:shadow-2xl transition-all duration-300 group/card">
+                            <div className="w-16 h-16 bg-orange-50 rounded-2xl flex items-center justify-center mb-6 group-hover/card:bg-orange-600 group-hover/card:text-white transition-colors duration-300">
+                                {React.cloneElement(val.icon, { 
+                                    className: "group-hover/card:text-white transition-colors text-orange-600" 
+                                })}
+                            </div>
+                            <h4 className="text-lg md:text-xl font-black text-gray-900 mb-3">{val.title}</h4>
+                            <p className="text-gray-500 text-sm leading-relaxed">
+                                {val.desc}
+                            </p>
+                        </div>
+                    </motion.div>
+                ))}
+            </div>
+
+            {/* Mobile Scroll Hint */}
+            <div className="flex justify-center lg:hidden mt-4">
+                <div className="flex gap-1">
+                    <div className="h-1 w-8 bg-orange-600 rounded-full"></div>
+                    <div className="h-1 w-2 bg-gray-200 rounded-full"></div>
+                    <div className="h-1 w-2 bg-gray-200 rounded-full"></div>
+                </div>
+            </div>
+
+            <style jsx global>{`
+                .no-scrollbar::-webkit-scrollbar { display: none; }
+            `}</style>
+        </div>
+    );
+};
 
 // --- Mock Data ---
 
 const defaultValues = [
-    { title: "Biblical Authority", desc: "We believe the Bible is the inspired Word of God and our final authority.", icon: <BookOpen className="text-orange-600" size={32} /> },
-    { title: "Authentic Community", desc: "We are better together. We prioritize real relationships over religious performance.", icon: <Users className="text-orange-600" size={32} /> },
-    { title: "Extravagant Generosity", desc: "We give because He gave. Generosity is our privilege, not just our duty.", icon: <Gift className="text-orange-600" size={32} /> },
-    { title: "Servant Leadership", desc: "We lead by serving others, just as Jesus washed the feet of His disciples.", icon: <Shield className="text-orange-600" size={32} /> },
-];
-
-const team = [
-    { name: "Mary Poppins", role: "Reach Kids Director", img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=400" },
-    { name: "Mike Chang", role: "Apex Youth Pastor", img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=400" },
-    { name: "David Psalm", role: "Worship Pastor", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=400" },
-    { name: "Sarah Connect", role: "Groups Director", img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=400" },
+    { title: "Biblical Authority", desc: "The inspired Word of God as our final authority.", icon: <BookOpen size={32} /> },
+    { title: "Authentic Community", desc: "Prioritizing real relationships over religious performance.", icon: <Users size={32} /> },
+    { title: "Extravagant Generosity", desc: "Giving is our privilege, not just our duty.", icon: <Gift size={32} /> },
+    { title: "Servant Leadership", desc: "We lead by serving others, just as Jesus did.", icon: <Shield size={32} /> },
+    { title: "Spirit Led", desc: "We move at the speed of the Holy Spirit's guidance.", icon: <Sun size={32} /> },
 ];
 
 export default function AboutPage() {
@@ -121,63 +116,77 @@ export default function AboutPage() {
     const [ministryLeaders, setMinistryLeaders] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    // Faith statements from churchSettings.beliefs
+    const faithStatements = Array.isArray(churchSettings?.beliefs) && churchSettings.beliefs.length > 0
+        ? churchSettings.beliefs
+        : [
+            "We believe in one true God, existing as eternally in three persons, Father, Son and Holy Spirit.",
+            "The power of the word of God. We believe the bible is the word of God and was an inspired by the holy spirit.",
+            "Salvation through Jesus Christ, by grace through faith alone.",
+            "The work of the holy spirit. He renews and empowers believers and He convicts the world of sin.",
+            "The universal church. we believe the church is the body Jesus Christ and He is the head.",
+            "We believe in Holy living. Christ must reflect in character and conduct."
+        ];
+
+
     useEffect(() => {
-        fetchChurchSettings();
-        fetchPastor();
-        fetchMinistryLeaders();
+        const fetchData = async () => {
+            try {
+                const [settingsRes, pastorRes, leadersRes] = await Promise.all([
+                    axios.get(`${API_URL}/settings/get.php`),
+                    axios.get(`${API_URL}/leadership/get.php?type=senior_pastor`),
+                    axios.get(`${API_URL}/leadership/get.php?type=ministry_leaders`)
+                ]);
+
+                setChurchSettings(settingsRes.data);
+                if (pastorRes.data.success) setPastor(pastorRes.data.data);
+                if (leadersRes.data.success) setMinistryLeaders(leadersRes.data.data);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
     }, []);
 
-    const fetchChurchSettings = async () => {
-        try {
-            const response = await axios.get(`${API_URL}/settings/get.php`);
-            setChurchSettings(response.data);
-        } catch (error) {
-            console.error('Error fetching church settings:', error);
-        }
-    };
+        // Icon mapping for core values
+        const iconMap = {
+            "Everything we do is God centered": <Sun className="text-orange-600" size={32} />,
+            "Governed by the word of God": <BookOpen className="text-orange-600" size={32} />,
+            "Integrity": <Shield className="text-orange-600" size={32} />,
+            "Prayer": <Users className="text-orange-600" size={32} />,
+            "Holiness": <Shield className="text-orange-600" size={32} />,
+            "Love": <Gift className="text-orange-600" size={32} />,
+            "Respect": <Users className="text-orange-600" size={32} />,
+            "Loyalty": <Shield className="text-orange-600" size={32} />,
+            "Unity": <Users className="text-orange-600" size={32} />,
+            "Excellency": <Sun className="text-orange-600" size={32} />,
+            "Empowerment": <Gift className="text-orange-600" size={32} />,
+            "Giving": <Gift className="text-orange-600" size={32} />,
+            "Education": <BookOpen className="text-orange-600" size={32} />,
+            "Service unto The Lord": <Shield className="text-orange-600" size={32} />,
+        };
 
-    const fetchPastor = async () => {
-        try {
-            const response = await axios.get(`${API_URL}/leadership/get.php?type=senior_pastor`);
-            if (response.data.success && response.data.data) {
-                setPastor(response.data.data);
-            }
-        } catch (error) {
-            console.error('Error fetching pastor:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const fetchMinistryLeaders = async () => {
-        try {
-            const response = await axios.get(`${API_URL}/leadership/get.php?type=ministry_leaders`);
-            if (response.data.success && response.data.data) {
-                setMinistryLeaders(response.data.data);
-            }
-        } catch (error) {
-            console.error('Error fetching ministry leaders:', error);
-        }
-    };
-
-    // Get values from DB or use defaults
-    const values = churchSettings?.coreValues?.length > 0 
-        ? churchSettings.coreValues.map(val => ({
-            title: val.title || val,
-            desc: val.desc || val.description || '',
-            icon: <BookOpen className="text-orange-600" size={32} />
-        }))
-        : defaultValues;
+        const values = churchSettings?.coreValues?.length > 0 
+            ? churchSettings.coreValues.map(val => {
+                const title = val.title || val;
+                return {
+                    title,
+                    desc: val.desc || val.description || '',
+                    icon: iconMap[title] || <BookOpen className="text-orange-600" size={32} />
+                };
+            })
+            : defaultValues;
 
     const churchName = churchSettings?.name || 'Life Reach Church';
-    const aboutText = churchSettings?.about || 'Life Reach Church started in a living room with 12 people and a dream to reach our city. We realized that church wasn\'t about a building, but about a people passionate for God.';
-    const visionText = churchSettings?.vision || '"To be a beacon of hope, reaching every soul with the transformative love of Christ, creating a city where no one walks alone."';
-    const missionText = churchSettings?.mission || 'We exist to Reach the lost, Raise disciples, and Release leaders into their God-given destiny.';
-    const churchAddress = churchSettings?.address || '';
-    const churchEmail = churchSettings?.email || '';
-    const churchPhone = churchSettings?.phone || '';
+    const visionText = churchSettings?.vision && churchSettings.vision.trim().length > 0
+        ? churchSettings.vision
+        : '"To be a beacon of hope, reaching every soul with the transformative love of Christ, creating a city where no one walks alone."';
+    const missionText = churchSettings?.mission && churchSettings.mission.trim().length > 0
+        ? churchSettings.mission
+        : 'We exist to Reach the lost, Raise disciples, and Release leaders into their God-given destiny.';
 
-    // Use ministry leaders from DB or fallback to mock data
     const team = ministryLeaders.length > 0 ? ministryLeaders : [
         { name: "Mary Poppins", role: "Reach Kids Director", image_url: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=400" },
         { name: "Mike Chang", role: "Apex Youth Pastor", image_url: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=400" },
@@ -188,190 +197,99 @@ export default function AboutPage() {
     return (
         <div className="bg-white">
             {/* Header / Hero */}
-            <div className="relative h-[400px] flex items-center justify-center bg-gray-900 overflow-hidden">
+            <div className="relative h-[450px] flex items-center justify-center bg-gray-900 overflow-hidden">
                 <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1529070538774-1843cb3265df?auto=format&fit=crop&q=80&w=1920')] bg-cover bg-center opacity-40"></div>
                 <div className="relative z-10 text-center text-white px-6 mt-16">
                     <h1 className="text-5xl md:text-7xl font-black mb-4">Our Story</h1>
-                    <p className="text-xl text-gray-200 max-w-2xl mx-auto">
-                        Discover the heart, history, and vision behind {churchName}.
-                    </p>
+                    <p className="text-xl text-gray-200 max-w-2xl mx-auto">Discover the heart and vision behind {churchName}.</p>
                 </div>
             </div>
 
             {loading ? (
-                <div className="py-24 bg-gray-50">
-                    <div className="container mx-auto px-6 text-center">
-                        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
-                        <p className="mt-4 text-gray-600">Loading church information...</p>
-                    </div>
+                <div className="py-24 bg-gray-50 flex flex-col items-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
                 </div>
             ) : (
                 <div className="py-24 bg-gray-50">
-                <div className="container mx-auto px-6">
-                    {/* About Section */}
-                    <div className="grid md:grid-cols-2 gap-16 items-center mb-32">
-                        <motion.div
-                            initial={{ opacity: 0, x: -30 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            viewport={{ once: true }}
-                        >
-                            <h3 className="text-orange-600 font-bold uppercase tracking-widest mb-2">Since 2018</h3>
-                            <h2 className="text-4xl font-black text-gray-900 mb-6">More Than Just Sunday</h2>
-                            <p className="text-lg text-gray-600 leading-relaxed mb-6">
-                                {aboutText}
-                            </p>
-                            <p className="text-lg text-gray-600 leading-relaxed mb-8">
-                                Today, we are a diverse family of believers united by one mission: to know Jesus and make Him known. Whether you are young or old, single or married, there is a place for you here.
-                            </p>
-                            <div className="flex gap-4">
-                                <div className="text-center p-6 bg-white rounded-2xl shadow-sm border border-gray-100 w-32">
-                                    <div className="text-3xl font-black text-orange-600 mb-1">6+</div>
-                                    <div className="text-xs uppercase font-bold text-gray-400">Years</div>
-                                </div>
-                                <div className="text-center p-6 bg-white rounded-2xl shadow-sm border border-gray-100 w-32">
-                                    <div className="text-3xl font-black text-orange-600 mb-1">500+</div>
-                                    <div className="text-xs uppercase font-bold text-gray-400">Members</div>
-                                </div>
-                            </div>
-                        </motion.div>
-                        <motion.div
-                            initial={{ opacity: 0, x: 30 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            viewport={{ once: true }}
-                            className="relative"
-                        >
-                            <div className="absolute -inset-4 bg-orange-500/20 rounded-3xl transform rotate-3"></div>
-                            <img src="https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&q=80&w=800" alt="Community" className="rounded-3xl shadow-2xl relative z-10 w-full" />
-                        </motion.div>
-                    </div>
-
-                    {/* Mission & Vision */}
-                    <div className="grid md:grid-cols-2 gap-8 lg:gap-16 mb-32">
-                        <motion.div
-                            whileHover={{ y: -5 }}
-                            className="bg-white p-12 rounded-3xl shadow-xl border-l-8 border-orange-500"
-                        >
-                            <Sun className="text-orange-500 mb-6" size={48} />
-                            <h3 className="text-3xl font-bold mb-4 text-gray-900">Our Vision</h3>
-                            <p className="text-xl text-gray-600 leading-relaxed">
-                                {visionText}
-                            </p>
-                        </motion.div>
-
-                        <motion.div
-                            whileHover={{ y: -5 }}
-                            className="bg-gray-900 p-12 rounded-3xl shadow-xl border-r-8 border-orange-500 text-white"
-                        >
-                            <MapPin className="text-orange-500 mb-6" size={48} />
-                            <h3 className="text-3xl font-bold mb-4 text-white">Our Mission</h3>
-                            <p className="text-xl text-gray-300 leading-relaxed">
-                                {missionText}
-                            </p>
-                        </motion.div>
-                    </div>
-
-                    {/* Core Values */}
-
-                    {/* Senior Pastor Section */}
-                    {pastor && (
-                        <div className="mb-32">
-                        <SectionTitle title="Our Leadership" subtitle="Senior Pastor" />
-                        <div className="relative rounded-3xl overflow-hidden shadow-2xl bg-gray-900">
-                            <div className="grid md:grid-cols-2">
-                                <div className="h-[500px] md:h-auto relative">
-                                    <img
-                                        src={pastor.image_url || "/imgs/pastor.png"}
-                                        alt={pastor.name}
-                                        className="absolute inset-0 w-full h-full object-cover"
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent md:hidden"></div>
-                                </div>
-                                <div className="p-12 md:p-20 flex flex-col justify-center text-white">
-                                    <h3 className="text-orange-500 font-bold uppercase tracking-widest mb-2">{pastor.title || "Senior Pastor"}</h3>
-                                    <h2 className="text-4xl md:text-5xl font-black mb-6">{pastor.name}</h2>
-                                    
-                                    {pastor.bio_paragraph_1 && (
-                                        <p className="text-gray-300 text-lg leading-relaxed mb-6">
-                                            {pastor.bio_paragraph_1}
-                                        </p>
-                                    )}
-                                    
-                                    {pastor.bio_paragraph_2 && (
-                                        <p className="text-gray-300 text-lg leading-relaxed mb-8">
-                                            {pastor.bio_paragraph_2}
-                                        </p>
-                                    )}
-                                    
-                                    {pastor.bio_paragraph_3 && (
-                                        <p className="text-gray-300 text-lg leading-relaxed mb-8">
-                                            {pastor.bio_paragraph_3}
-                                        </p>
-                                    )}
-                                    
-                                    {pastor.bio_paragraph_4 && (
-                                        <p className="text-gray-300 text-lg leading-relaxed mb-8">
-                                            {pastor.bio_paragraph_4}
-                                        </p>
-                                    )}
-                                    
-                                    <div className="flex gap-4">
-                                        {pastor.instagram_url && (
-                                            <a 
-                                                href={pastor.instagram_url} 
-                                                target="_blank" 
-                                                rel="noopener noreferrer"
-                                                className="text-orange-500 font-bold hover:text-white transition-colors"
-                                            >
-                                                Follow on Instagram
-                                            </a>
-                                        )}
-                                        {pastor.podcast_url && (
-                                            <a 
-                                                href={pastor.podcast_url} 
-                                                target="_blank" 
-                                                rel="noopener noreferrer"
-                                                className="text-orange-500 font-bold hover:text-white transition-colors"
-                                            >
-                                                Listen to Podcast
-                                            </a>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        </div>
-                    )}
-
-                    {/* Department Heads */}
-                    <SectionTitle title="Ministry Directors" subtitle="Our Team" />
-                    <div className="grid md:grid-cols-4 gap-8">
-                        {team.map((member, idx) => (
-                            <motion.div
-                                key={idx}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: idx * 0.1 }}
-                                whileHover={{ y: -10 }}
-                                className="group text-center"
-                            >
-                                <div className="relative mb-6 mx-auto w-48 h-48">
-                                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-xl"></div>
-                                    <div className="relative w-full h-full rounded-full overflow-hidden border-4 border-white shadow-2xl">
-                                        <img 
-                                            src={member.image_url || member.img || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=400"} 
-                                            alt={member.name} 
-                                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" 
-                                        />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                    </div>
-                                </div>
-                                <h4 className="text-xl font-bold text-gray-900 mb-2">{member.name}</h4>
-                                <p className="text-orange-600 font-semibold text-sm uppercase tracking-wider">{member.title || member.role}</p>
+                    <div className="container mx-auto px-6">
+                        
+                        {/* Mission & Vision Section */}
+                        <div className="grid md:grid-cols-2 gap-8 mb-32">
+                            <motion.div whileHover={{ y: -5 }} className="bg-white p-10 md:p-14 rounded-[2.5rem] shadow-xl border-l-8 border-orange-500">
+                                <Sun className="text-orange-500 mb-6" size={48} />
+                                <h3 className="text-3xl font-bold mb-4">Our Vision</h3>
+                                <p className="text-xl text-gray-600 leading-relaxed italic">{visionText}</p>
                             </motion.div>
-                        ))}
+                            <motion.div whileHover={{ y: -5 }} className="bg-gray-900 p-10 md:p-14 rounded-[2.5rem] shadow-xl border-r-8 border-orange-500 text-white">
+                                <MapPin className="text-orange-500 mb-6" size={48} />
+                                <h3 className="text-3xl font-bold mb-4">Our Mission</h3>
+                                <p className="text-xl text-gray-300 leading-relaxed whitespace-pre-line">{missionText}</p>
+                            </motion.div>
+                        </div>
+
+                        {/* Core Values Section (New Multi-Card Design) */}
+                        <SectionTitle title="What We Believe" subtitle="Our Core Values" />
+                        <ValuesCarousel values={values} />
+
+                        {/* Faith Statements Section */}
+                        <SectionTitle title="Faith Statements" subtitle="What We Believe" />
+                        <div className="grid md:grid-cols-2 gap-8 mb-32">
+                            {faithStatements.map((statement, idx) => (
+                                <motion.div
+                                    key={idx}
+                                    initial={{ opacity: 0, y: 30 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{ delay: idx * 0.1 }}
+                                    className="bg-white rounded-3xl shadow-xl p-8 text-gray-800 text-lg font-medium flex items-center"
+                                >
+                                    <span className="text-orange-500 font-bold mr-4">{idx + 1}.</span>
+                                    <span>{statement}</span>
+                                </motion.div>
+                            ))}
+                        </div>
+
+                        {/* Senior Pastor Section */}
+                        {pastor && (
+                            <div className="mb-32">
+                                <SectionTitle title="Our Leadership" subtitle="Senior Pastor" />
+                                <div className="relative rounded-[3rem] shadow-2xl bg-gray-900 grid md:grid-cols-2 min-h-[650px]">
+                                    <div className="h-full min-h-[650px] relative">
+                                        <img src={pastor.image_url || "/imgs/pastor.png"} alt={pastor.name} className="absolute inset-0 w-full h-full object-cover" />
+                                    </div>
+                                    <div className="p-12 md:p-20 text-white flex flex-col justify-center min-h-[650px]">
+                                        <h3 className="text-orange-500 font-bold uppercase tracking-widest mb-2">{pastor.title || "Senior Pastor"}</h3>
+                                        <h2 className="text-4xl md:text-5xl font-black mb-6">{pastor.name}</h2>
+                                        {[1,2,3,4].map(i => pastor[`bio_paragraph_${i}`] && (
+                                            <p key={i} className="text-gray-300 text-lg leading-relaxed mb-4">{pastor[`bio_paragraph_${i}`]}</p>
+                                        ))}
+                                        <div className="flex gap-4 mt-4">
+                                            {pastor.instagram_url && (
+                                                <a href={pastor.instagram_url} target="_blank" rel="noopener noreferrer" className="text-orange-500 font-bold hover:text-white transition-colors">Instagram</a>
+                                            )}
+                                            {pastor.podcast_url && (
+                                                <a href={pastor.podcast_url} target="_blank" rel="noopener noreferrer" className="text-orange-500 font-bold hover:text-white transition-colors">Podcast</a>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Team Section */}
+                        <SectionTitle title="Ministry Directors" subtitle="Our Team" />
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                            {team.map((member, idx) => (
+                                <div key={idx} className="text-center group">
+                                    <div className="w-32 h-32 md:w-48 md:h-48 mx-auto mb-6 rounded-full overflow-hidden border-4 border-white shadow-lg group-hover:scale-105 transition-all duration-300">
+                                        <img src={member.image_url} alt={member.name} className="w-full h-full object-cover" />
+                                    </div>
+                                    <h4 className="text-lg font-bold text-gray-900">{member.name}</h4>
+                                    <p className="text-orange-600 text-sm font-semibold uppercase tracking-tighter">{member.role || member.title}</p>
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                </div>
                 </div>
             )}
         </div>
