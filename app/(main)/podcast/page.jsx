@@ -59,12 +59,11 @@ export default function PodcastPage() {
     useEffect(() => {
         const fetchPodcasts = async () => {
             try {
-                const RSS_URL = 'https://anchor.fm/s/128a41cc/podcast/rss';
-                const response = await fetch(`https://corsproxy.io/?${encodeURIComponent(RSS_URL)}`);
-
-                if (!response.ok) throw new Error("Network response was not ok");
-
-                const xmlText = await response.text();
+                // Fetch from Next.js API route (server-side fetch, no CORS issues)
+                const response = await fetch('/api/podcast-rss');
+                const data = await response.json();
+                if (!data.success) throw new Error(data.error || 'Failed to fetch RSS');
+                const xmlText = data.xml;
                 const parser = new DOMParser();
                 const xml = parser.parseFromString(xmlText, "text/xml");
 
@@ -278,12 +277,14 @@ export default function PodcastPage() {
                             </div>
 
                             {/* Audio Element */}
-                            <audio
-                                ref={audioRef}
-                                src={currentEp?.url}
-                                onTimeUpdate={onTimeUpdate}
-                                onEnded={() => setIsPlaying(false)}
-                            />
+                            {currentEp?.url && (
+                                <audio
+                                    ref={audioRef}
+                                    src={currentEp.url}
+                                    onTimeUpdate={onTimeUpdate}
+                                    onEnded={() => setIsPlaying(false)}
+                                />
+                            )}
 
                             <div className={`
                                 flex items-center relative z-10
