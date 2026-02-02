@@ -253,10 +253,37 @@ export default function AboutPage() {
                         {pastor && (
                             <div className="mb-32">
                                 <SectionTitle title="Our Leadership" subtitle="Senior Pastor" />
-                                <div className="relative rounded-[3rem] shadow-2xl bg-gray-900 grid md:grid-cols-2 min-h-[650px]">
-                                    <div className="h-full min-h-[650px] relative">
-                                        <img src={pastor.image_url || "/imgs/pastor.png"} alt={pastor.name} className="absolute inset-0 w-full h-full object-cover" />
-                                    </div>
+                                <div className="relative rounded-[3rem] shadow-2xl bg-gray-900 grid md:grid-cols-2 min-h-[650px] overflow-hidden">
+                                    <div className="h-full min-h-[650px] relative bg-gray-900">
+    <img 
+        src={pastor.image_url || "/imgs/pastor.png"} 
+        alt={pastor.name} 
+        className="absolute inset-0 w-full h-full object-contain object-bottom" 
+    />
+
+    {/* Mobile/Tablet: Bottom-to-Top Fade */}
+    <div className="absolute inset-0 md:hidden pointer-events-none" 
+        style={{
+            background: `linear-gradient(to top, 
+                rgba(17, 24, 39, 1) 0%, 
+                rgba(17, 24, 39, 0.8) 15%, 
+                rgba(17, 24, 39, 0) 40%)`
+        }} 
+    />
+
+    {/* Desktop: Right-to-Left (side) and Bottom Fade */}
+    <div className="absolute inset-0 hidden md:block pointer-events-none" 
+        style={{
+            background: `linear-gradient(to right, 
+                rgba(17, 24, 39, 1) 0%, 
+                rgba(17, 24, 39, 0.4) 20%, 
+                transparent 50%),
+                linear-gradient(to top, 
+                rgba(17, 24, 39, 0.8) 0%, 
+                transparent 15%)`
+        }} 
+    />
+</div>
                                     <div className="p-12 md:p-20 text-white flex flex-col justify-center min-h-[650px]">
                                         <h3 className="text-orange-500 font-bold uppercase tracking-widest mb-2">{pastor.title || "Senior Pastor"}</h3>
                                         <h2 className="text-4xl md:text-5xl font-black mb-6">{pastor.name}</h2>
