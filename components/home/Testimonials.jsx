@@ -48,23 +48,29 @@ export default function Testimonials() {
 }, []);
 
 
+    const slides = testimonials.reduce((acc, t, idx) => {
+        if (idx % 2 === 0) acc.push([t]);
+        else acc[acc.length - 1].push(t);
+        return acc;
+    }, []);
+
     // 2. Auto-advance carousel
    useEffect(() => {
-    if (!testimonials.length) return;
+    if (!slides.length) return;
 
     const timer = setInterval(() => {
-        setCurrentTestimonial(prev => (prev + 1) % testimonials.length);
+        setCurrentTestimonial(prev => (prev + 1) % slides.length);
     }, 8000);
 
     return () => clearInterval(timer);
-}, [testimonials]);
+}, [slides]);
 
     const nextTestimonial = () => {
-        setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
+        setCurrentTestimonial((prev) => (prev + 1) % slides.length);
     };
 
     const prevTestimonial = () => {
-        setCurrentTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length);
+        setCurrentTestimonial((prev) => (prev - 1 + slides.length) % slides.length);
     };
 
     if (loading) return (
@@ -80,7 +86,7 @@ export default function Testimonials() {
             <div className="container mx-auto px-6 relative z-10">
                 <SectionTitle title="Stories of Change" subtitle="Real People. Real God." />
 
-                <div className="max-w-4xl mx-auto relative">
+                <div className="max-w-8xl mx-auto relative">
                     <AnimatePresence mode='wait'>
                         <motion.div
                             key={currentTestimonial}
@@ -90,30 +96,34 @@ export default function Testimonials() {
                             transition={{ duration: 0.5 }}
                             className="w-full"
                         >
-                            <Card className="p-10 md:p-16 border border-gray-100 flex flex-col md:flex-row gap-8 items-center text-center md:text-left shadow-2xl relative min-h-[400px]">
-                                <Quote className="absolute top-8 right-8 text-orange-100 w-24 h-24 rotate-12 opacity-50" fill="currentColor" />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                {(slides[currentTestimonial] || []).map((item) => (
+                                    <Card key={item.id} className="p-10 md:p-12 border border-gray-100 flex flex-col md:flex-row gap-8 items-center text-center md:text-left shadow-2xl relative min-h-[400px]">
+                                        <Quote className="absolute top-8 right-8 text-orange-100 w-24 h-24 rotate-12 opacity-50" fill="currentColor" />
 
-                                <div className="flex-shrink-0 relative">
-                                    <div className="w-32 h-32 md:w-48 md:h-48 rounded-full p-2 border-2 border-dashed border-orange-200 flex items-center justify-center bg-orange-50">
-                                        {/* Since DB doesn't have images yet, we use a styled initial or placeholder */}
-                                        <span className="text-5xl font-black text-orange-200 uppercase">
-                                            {testimonials[currentTestimonial]?.name?.charAt(0)}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className="relative z-10 flex-1">
-                                    <Quote className="text-orange-500 mb-6 mx-auto md:mx-0 w-8 h-8" fill="currentColor" />
-                                    <p className="text-xl md:text-2xl font-medium text-gray-800 mb-8 italic leading-relaxed">
-                                        "{testimonials[currentTestimonial]?.quote}"
-                                    </p>
-                                    <div>
-                                        <h4 className="text-2xl font-bold text-gray-900 mb-1">{testimonials[currentTestimonial]?.name}</h4>
-                                        <span className="text-sm text-orange-600 font-bold uppercase tracking-wide bg-orange-50 px-3 py-1 rounded-full">
-                                            {testimonials[currentTestimonial]?.role}
-                                        </span>
-                                    </div>
-                                </div>
-                            </Card>
+                                        <div className="flex-shrink-0 relative">
+                                            <div className="w-28 h-28 md:w-40 md:h-40 rounded-full p-2 border-2 border-dashed border-orange-200 flex items-center justify-center bg-orange-50">
+                                                {/* Since DB doesn't have images yet, we use a styled initial or placeholder */}
+                                                <span className="text-5xl font-black text-orange-200 uppercase">
+                                                    {item?.name?.charAt(0)}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="relative z-10 flex-1">
+                                            <Quote className="text-orange-500 mb-6 mx-auto md:mx-0 w-8 h-8" fill="currentColor" />
+                                            <p className="text-lg md:text-xl font-medium text-gray-800 mb-8 italic leading-relaxed">
+                                                "{item?.quote}"
+                                            </p>
+                                            <div>
+                                                <h4 className="text-xl md:text-2xl font-bold text-gray-900 mb-1">{item?.name}</h4>
+                                                <span className="text-xs md:text-sm text-orange-600 font-bold uppercase tracking-wide bg-orange-50 px-3 py-1 rounded-full">
+                                                    {item?.role}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </Card>
+                                ))}
+                            </div>
                         </motion.div>
                     </AnimatePresence>
 
@@ -123,7 +133,7 @@ export default function Testimonials() {
                             <ChevronLeft size={20} />
                         </button>
                         <div className="flex gap-2">
-                            {testimonials.map((_, idx) => (
+                            {slides.map((_, idx) => (
                                 <button
                                     key={idx}
                                     onClick={() => setCurrentTestimonial(idx)}

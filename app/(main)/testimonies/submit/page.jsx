@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Mail, MapPin, MessageCircle, Send, CheckCircle, ArrowLeft, X } from 'lucide-react';
 import axios from "axios";
+import { useAuth } from '@/context/AuthContext';
 
 const API_URL = 'https://content.lifereachchurch.org';
 
@@ -45,6 +46,7 @@ const SwalModal = ({ isOpen, onClose }) => {
 };
 
 export default function TestimonySubmitPage() {
+    const { user, isAuthenticated } = useAuth();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [formData, setFormData] = useState({
@@ -52,21 +54,50 @@ export default function TestimonySubmitPage() {
         contact: '',
         location: '',
         source: '',
-        testimony: ''
+        testimony: '',
+        memberType: 'visitor'
     });
+
+    useEffect(() => {
+        if (isAuthenticated && user) {
+            const fullName = `${user.first_name || user.firstName || ''} ${user.last_name || user.lastName || ''}`.trim();
+            setFormData((prev) => ({
+                ...prev,
+                name: fullName || prev.name,
+                contact: user.email || user.phone || prev.contact,
+                memberType: 'member'
+            }));
+        }
+    }, [isAuthenticated, user]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
 
         try {
+            const payload = {
+                name: formData.name,
+                contact: formData.contact,
+                location: formData.location,
+                source: formData.source,
+                testimony: formData.testimony,
+                is_member: formData.memberType === 'member' ? 1 : 0,
+                member_id: formData.memberType === 'member' ? (user?.id || null) : null
+            };
             // Real API call to your PHP backend
-            const response = await axios.post(`${API_URL}/testimonies/submit.php`, formData);
+            const response = await axios.post(`${API_URL}/testimonies/submit.php`, payload);
 
             if (response.data.status === 'success') {
                 setIsSubmitting(false);
                 setShowSuccess(true);
-                setFormData({ name: '', contact: '', location: '', source: '', testimony: '' }); // Reset form
+                setFormData((prev) => ({
+                    name: isAuthenticated ? prev.name : '',
+                    contact: isAuthenticated ? prev.contact : '',
+                    location: '',
+                    source: '',
+                    testimony: '',
+                    memberType: isAuthenticated ? 'member' : 'visitor'
+                })); // Reset form
             }
         } catch (error) {
             setIsSubmitting(false);
@@ -112,6 +143,44 @@ export default function TestimonySubmitPage() {
 
                                 {/* Personal Info Grid */}
                                 <div className="grid md:grid-cols-2 gap-8">
+                                    <div className="md:col-span-2">
+                                        <label className="block text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+                                            <User size={16} className="text-orange-500" /> Member or Visitor
+                                        </label>
+                                        <div className="flex flex-wrap gap-4">
+                                            <label className={`flex items-center gap-2 px-4 py-3 rounded-xl border ${formData.memberType === 'member' ? 'border-orange-400 bg-orange-50' : 'border-gray-200 bg-white'} cursor-pointer`}
+                                                   aria-disabled={isAuthenticated}
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    name="memberType"
+                                                    value="member"
+                                                    checked={formData.memberType === 'member'}
+                                                    disabled={isAuthenticated}
+                                                    onChange={(e) => setFormData({...formData, memberType: e.target.value})}
+                                                    className="accent-orange-600"
+                                                />
+                                                <span className="text-sm font-bold text-gray-700">Member</span>
+                                            </label>
+                                            <label className={`flex items-center gap-2 px-4 py-3 rounded-xl border ${formData.memberType === 'visitor' ? 'border-orange-400 bg-orange-50' : 'border-gray-200 bg-white'} cursor-pointer`}
+                                                   aria-disabled={isAuthenticated}
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    name="memberType"
+                                                    value="visitor"
+                                                    checked={formData.memberType === 'visitor'}
+                                                    disabled={isAuthenticated}
+                                                    onChange={(e) => setFormData({...formData, memberType: e.target.value})}
+                                                    className="accent-orange-600"
+                                                />
+                                                <span className="text-sm font-bold text-gray-700">Visitor</span>
+                                            </label>
+                                            {isAuthenticated && (
+                                                <span className="text-xs text-gray-500 self-center">Signed in members are recorded as members automatically.</span>
+                                            )}
+                                        </div>
+                                    </div>
                                     <div>
                                         <label className="block text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
                                             <User size={16} className="text-orange-500" /> Full Name
