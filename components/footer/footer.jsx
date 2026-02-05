@@ -16,7 +16,7 @@ export default function Footer() {
     const [churchSettings, setChurchSettings] = useState(null);
 
     const pathname = usePathname();
-    const transparentPages = ['/', '/about', '/events', '/podcast'];
+    const transparentPages = ['/', '/about', '/events', '/podcast','/contact', '/sermons', '/blog', '/library', '/education', '/plan-visit'];
     const isTransparentPage = transparentPages.includes(pathname);
 
     useEffect(() => {

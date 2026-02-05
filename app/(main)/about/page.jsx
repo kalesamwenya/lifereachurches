@@ -250,58 +250,62 @@ export default function AboutPage() {
                         </div>
 
                         {/* Senior Pastor Section */}
-                        {pastor && (
-                            <div className="mb-32">
-                                <SectionTitle title="Our Leadership" subtitle="Senior Pastor" />
-                                <div className="relative rounded-[3rem] shadow-2xl bg-gray-900 grid md:grid-cols-2 min-h-[650px] overflow-hidden">
-                                    <div className="h-full min-h-[650px] relative bg-gray-900">
-    <img 
-        src={pastor.image_url || "/imgs/pastor.png"} 
-        alt={pastor.name} 
-        className="absolute inset-0 w-full h-full object-contain object-bottom" 
-    />
+{pastor && (
+    <div className="mb-32">
+        <SectionTitle title="Our Leadership" subtitle="Senior Pastor" />
+        <div className="relative rounded-[3rem] shadow-2xl bg-gray-900 grid md:grid-cols-2 min-h-[650px] overflow-hidden">
+            
+            {/* Image Container - Strictly no padding or margin */}
+            <div className="h-full min-h-[650px] relative bg-gray-900 p-0 m-0">
+                <img 
+                    src={pastor.image_url || "/imgs/pastor.png"} 
+                    alt={pastor.name} 
+                    className="absolute inset-0 w-full h-full object-contain object-bottom" 
+                />
 
-    {/* Mobile/Tablet: Bottom-to-Top Fade */}
-    <div className="absolute inset-0 md:hidden pointer-events-none" 
-        style={{
-            background: `linear-gradient(to top, 
-                rgba(17, 24, 39, 1) 0%, 
-                rgba(17, 24, 39, 0.8) 15%, 
-                rgba(17, 24, 39, 0) 40%)`
-        }} 
-    />
+                {/* Mobile/Tablet: Bottom-to-Top Fade */}
+                <div className="absolute inset-0 md:hidden pointer-events-none" 
+                    style={{
+                        background: `linear-gradient(to top, 
+                            rgba(17, 24, 39, 1) 0%, 
+                            rgba(17, 24, 39, 0.8) 15%, 
+                            rgba(17, 24, 39, 0) 40%)`
+                    }} 
+                />
 
-    {/* Desktop: Right-to-Left (side) and Bottom Fade */}
-    <div className="absolute inset-0 hidden md:block pointer-events-none" 
-        style={{
-            background: `linear-gradient(to right, 
-                rgba(17, 24, 39, 1) 0%, 
-                rgba(17, 24, 39, 0.4) 20%, 
-                transparent 50%),
-                linear-gradient(to top, 
-                rgba(17, 24, 39, 0.8) 0%, 
-                transparent 15%)`
-        }} 
-    />
-</div>
-                                    <div className="p-12 md:p-20 text-white flex flex-col justify-center min-h-[650px]">
-                                        <h3 className="text-orange-500 font-bold uppercase tracking-widest mb-2">{pastor.title || "Senior Pastor"}</h3>
-                                        <h2 className="text-4xl md:text-5xl font-black mb-6">{pastor.name}</h2>
-                                        {[1,2,3,4].map(i => pastor[`bio_paragraph_${i}`] && (
-                                            <p key={i} className="text-gray-300 text-lg leading-relaxed mb-4">{pastor[`bio_paragraph_${i}`]}</p>
-                                        ))}
-                                        <div className="flex gap-4 mt-4">
-                                            {pastor.instagram_url && (
-                                                <a href={pastor.instagram_url} target="_blank" rel="noopener noreferrer" className="text-orange-500 font-bold hover:text-white transition-colors">Instagram</a>
-                                            )}
-                                            {pastor.podcast_url && (
-                                                <a href={pastor.podcast_url} target="_blank" rel="noopener noreferrer" className="text-orange-500 font-bold hover:text-white transition-colors">Podcast</a>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
+                {/* Desktop: Right-to-Left (side) and Bottom Fade */}
+                <div className="absolute inset-0 hidden md:block pointer-events-none" 
+                    style={{
+                        background: `linear-gradient(to right, 
+                            rgba(17, 24, 39, 1) 0%, 
+                            rgba(17, 24, 39, 0.4) 20%, 
+                            transparent 50%),
+                            linear-gradient(to top, 
+                            rgba(17, 24, 39, 0.8) 0%, 
+                            transparent 15%)`
+                    }} 
+                />
+            </div>
+
+            {/* Content Side */}
+            <div className="p-12 md:p-20 text-white flex flex-col justify-center min-h-[650px]">
+                <h3 className="text-orange-500 font-bold uppercase tracking-widest mb-2">{pastor.title || "Senior Pastor"}</h3>
+                <h2 className="text-4xl md:text-5xl max-sm:text-[1.5rem] font-black mb-6">{pastor.name}</h2>
+                {[1,2,3,4].map(i => pastor[`bio_paragraph_${i}`] && (
+                    <p key={i} className="text-gray-300 text-lg leading-relaxed mb-4">{pastor[`bio_paragraph_${i}`]}</p>
+                ))}
+                <div className="flex gap-4 mt-4">
+                    {pastor.instagram_url && (
+                        <a href={pastor.instagram_url} target="_blank" rel="noopener noreferrer" className="text-orange-500 font-bold hover:text-white transition-colors">Instagram</a>
+                    )}
+                    {pastor.podcast_url && (
+                        <a href={pastor.podcast_url} target="_blank" rel="noopener noreferrer" className="text-orange-500 font-bold hover:text-white transition-colors">Podcast</a>
+                    )}
+                </div>
+            </div>
+        </div>
+    </div>
+)}
 
                         {/* Team Section */}
                         <SectionTitle title="Ministry Directors" subtitle="Our Team" />
