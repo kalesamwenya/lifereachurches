@@ -316,7 +316,7 @@ export default function AboutPage() {
                                         <img src={member.image_url} alt={member.name} className="w-full h-full object-cover" />
                                     </div>
                                     <h4 className="text-lg font-bold text-gray-900">{member.name}</h4>
-                                    <p className="text-orange-600 text-sm font-semibold uppercase tracking-tighter">{member.role || member.title}</p>
+                                    <p className="text-orange-600 text-sm font-semibold uppercase tracking-tighter">{member.title && member.position}</p>
                                 </div>
                             ))}
                         </div>

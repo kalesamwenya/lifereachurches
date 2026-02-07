@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { User, Mail, Phone, MapPin, Calendar, Edit2, Save, X, Camera, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
+import { MAX_IMAGE_SIZE_BYTES, getImageSizeErrorMessage } from '@/lib/fileValidation';
 
 const API_URL = 'https://content.lifereachchurch.org';
 
@@ -91,9 +92,9 @@ export default function Profile() {
       return;
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setMessage({ type: 'error', text: 'File size must be less than 5MB' });
+    // Validate file size (max 2MB)
+    if (file.size > MAX_IMAGE_SIZE_BYTES) {
+      setMessage({ type: 'error', text: getImageSizeErrorMessage() });
       return;
     }
 
