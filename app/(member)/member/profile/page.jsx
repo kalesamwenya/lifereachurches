@@ -16,10 +16,16 @@ export default function Profile() {
   const [userData, setUserData] = useState(null);
   const [editedData, setEditedData] = useState(null);
   const [isUploadingPicture, setIsUploadingPicture] = useState(false);
+  const [socialLinks, setSocialLinks] = useState({
+    google: { linked: false, linked_at: null },
+    facebook: { linked: false, linked_at: null }
+  });
+  const [socialLoading, setSocialLoading] = useState(true);
 
   useEffect(() => {
     if (user?.id) {
       fetchProfile();
+      fetchSocialStatus();
     }
   }, [user]);
 
@@ -39,6 +45,23 @@ export default function Profile() {
       setMessage({ type: 'error', text: 'Failed to load profile' });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchSocialStatus = async () => {
+    setSocialLoading(true);
+    try {
+      const response = await axios.get(`${API_URL}/members/social/status.php`, {
+        params: { member_id: user.id }
+      });
+
+      if (response.data.success) {
+        setSocialLinks(response.data.accounts);
+      }
+    } catch (error) {
+      console.error('Error fetching social links:', error);
+    } finally {
+      setSocialLoading(false);
     }
   };
 
@@ -137,6 +160,33 @@ export default function Profile() {
       setMessage({ type: 'error', text: error.response?.data?.message || 'Failed to upload profile picture' });
     } finally {
       setIsUploadingPicture(false);
+    }
+  };
+
+  const handleStartLink = (provider) => {
+    if (!user?.id) return;
+    const returnTo = `${window.location.origin}/member/profile`;
+    const linkUrl = `${API_URL}/members/social/${provider}_start.php?member_id=${user.id}&return_to=${encodeURIComponent(returnTo)}`;
+    window.location.href = linkUrl;
+  };
+
+  const handleUnlink = async (provider) => {
+    if (!confirm(`Unlink your ${provider} account?`)) return;
+
+    try {
+      const response = await axios.post(`${API_URL}/members/social/unlink.php`, {
+        member_id: user.id,
+        provider
+      });
+
+      if (response.data.success) {
+        fetchSocialStatus();
+      } else {
+        setMessage({ type: 'error', text: response.data.message || 'Failed to unlink account' });
+      }
+    } catch (error) {
+      console.error('Error unlinking account:', error);
+      setMessage({ type: 'error', text: 'Failed to unlink account' });
     }
   };
 
@@ -414,6 +464,79 @@ export default function Profile() {
               <div className="p-4 bg-gray-50 rounded-2xl">
                 <span className="text-gray-900">{userData.notes || 'No bio provided'}</span>
               </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Ministry Information */}
+      <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-xl font-black uppercase">Linked Accounts</h2>
+            <p className="text-sm text-gray-500">Connect Google or Facebook for faster sign-in</p>
+          </div>
+          {socialLoading && (
+            <span className="text-xs font-bold text-gray-400">Loading...</span>
+          )}
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-4">
+          <div className="border border-gray-200 rounded-2xl p-5 flex items-center justify-between">
+            <div>
+              <p className="text-sm uppercase tracking-wide text-gray-400 font-bold">Google</p>
+              <p className="text-lg font-black text-gray-900">
+                {socialLinks.google.linked ? 'Connected' : 'Not connected'}
+              </p>
+              {socialLinks.google.linked_at && (
+                <p className="text-xs text-gray-500">Linked on {new Date(socialLinks.google.linked_at).toLocaleDateString()}</p>
+              )}
+            </div>
+            {socialLinks.google.linked ? (
+              <button
+                onClick={() => handleUnlink('google')}
+                className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-bold text-gray-600 hover:bg-gray-50"
+                disabled={socialLoading}
+              >
+                Disconnect
+              </button>
+            ) : (
+              <button
+                onClick={() => handleStartLink('google')}
+                className="px-4 py-2 rounded-xl bg-orange-600 text-white text-sm font-bold hover:bg-orange-700"
+                disabled={socialLoading}
+              >
+                Connect
+              </button>
+            )}
+          </div>
+
+          <div className="border border-gray-200 rounded-2xl p-5 flex items-center justify-between">
+            <div>
+              <p className="text-sm uppercase tracking-wide text-gray-400 font-bold">Facebook</p>
+              <p className="text-lg font-black text-gray-900">
+                {socialLinks.facebook.linked ? 'Connected' : 'Not connected'}
+              </p>
+              {socialLinks.facebook.linked_at && (
+                <p className="text-xs text-gray-500">Linked on {new Date(socialLinks.facebook.linked_at).toLocaleDateString()}</p>
+              )}
+            </div>
+            {socialLinks.facebook.linked ? (
+              <button
+                onClick={() => handleUnlink('facebook')}
+                className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-bold text-gray-600 hover:bg-gray-50"
+                disabled={socialLoading}
+              >
+                Disconnect
+              </button>
+            ) : (
+              <button
+                onClick={() => handleStartLink('facebook')}
+                className="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-700"
+                disabled={socialLoading}
+              >
+                Connect
+              </button>
             )}
           </div>
         </div>

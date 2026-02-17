@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect } from 'react';
-import { useSession, signIn, signOut, getSession } from 'next-auth/react';
+import { useSession, signIn, signOut } from 'next-auth/react';
 import axios from 'axios';
 
 const AuthContext = createContext(null);
@@ -37,12 +37,11 @@ export function AuthProvider({ children }) {
             });
 
             if (result?.ok) {
-                const updatedSession = await getSession();
-                if (updatedSession?.user) {
-                    setUser(updatedSession.user);
-                    setToken(updatedSession.user.accessToken || null);
-                }
                 return { success: true };
+            }
+
+            if (!result) {
+                return { success: false, message: 'Auth server unreachable' };
             }
 
             const errorMessage =

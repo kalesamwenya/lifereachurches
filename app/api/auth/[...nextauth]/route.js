@@ -3,6 +3,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import axios from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://content.lifereachchurch.org';
+const AUTH_TIMEOUT_MS = 10000;
 
 export const authOptions = {
     providers: [
@@ -13,12 +14,19 @@ export const authOptions = {
                 password: { label: "Password", type: "password" }
             },
             async authorize(credentials) {
+                if (!credentials?.email || !credentials?.password) {
+                    console.error('❌ Missing credentials payload');
+                    return null;
+                }
+
                 try {
                     console.log('🔐 Attempting login to:', `${API_URL}/auth/login.php`);
                     
                     const response = await axios.post(`${API_URL}/auth/login.php`, {
                         email: credentials.email,
                         password: credentials.password
+                    }, {
+                        timeout: AUTH_TIMEOUT_MS
                     });
 
                     console.log('✅ Login response:', response.data);
@@ -71,6 +79,10 @@ export const authOptions = {
             return token;
         },
         async session({ session, token }) {
+            if (!session.user) {
+                session.user = {};
+            }
+
             if (token) {
                 session.user.id = token.id;
                 session.user.role = token.role;
@@ -87,7 +99,9 @@ export const authOptions = {
         strategy: 'jwt',
         maxAge: 24 * 60 * 60 // 24 hours
     },
-    secret: process.env.NEXTAUTH_SECRET || '9b7f3a4c1d8e4a2fb6c0e3a7d5f92c1e4b8a0f6d3c2e9a1b7d4f5e8c6a9b2'
+    secret: process.env.NEXTAUTH_SECRET || '9b7f3a4c1d8e4a2fb6c0e3a7d5f92c1e4b8a0f6d3c2e9a1b7d4f5e8c6a9b2',
+    debug: process.env.NODE_ENV === 'development',
+    trustHost: true
 };
 
 const handler = NextAuth(authOptions);

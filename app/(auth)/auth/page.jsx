@@ -135,6 +135,7 @@ function AuthForm() {
         }
     };
 
+
     return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-0 sm:p-6 sm:pt-32">
             <div className="max-w-5xl w-full h-screen sm:h-auto bg-white rounded-none sm:rounded-[2rem] shadow-none sm:shadow-2xl overflow-hidden grid md:grid-cols-2">
