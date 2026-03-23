@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { Calendar, CheckCircle, Loader2, CheckCircle2, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { sub } from 'date-fns';
 
 const API_URL = 'https://content.lifereachchurch.org';
 
@@ -17,7 +18,9 @@ export default function PlanVisitPage() {
         email: '',
         phone: '',
         visit_date: '',
-        bringing_kids: false
+        bringing_kids: false,
+        stay_area: '',
+        pickup_point: ''
     });
 
     const handleSubmit = async (e) => {
@@ -25,7 +28,7 @@ export default function PlanVisitPage() {
         setIsLoading(true);
 
         try {
-            await axios.post(`${API_URL}/inbox/messages.php`, {
+            await axios.post(`${API_URL}/inbox/letusknow.php`, {
                 type: 'visit',
                 first_name: formData.first_name,
                 last_name: formData.last_name,
@@ -33,8 +36,10 @@ export default function PlanVisitPage() {
                 phone: formData.phone,
                 subject: `New Visit Planned`,
                 visit_date: formData.visit_date,
-                message: `Bringing Kids: ${formData.bringing_kids ? 'Yes' : 'No'}`
-            });
+                message: `Bringing Kids: ${formData.bringing_kids ? 'Yes' : 'No'}`,
+                stay_area: formData.stay_area,
+                pickup_point: formData.pickup_point
+        });
 
             setIsSuccess(true);
         } catch (err) {
@@ -47,7 +52,8 @@ export default function PlanVisitPage() {
 
     const resetForm = () => {
         setIsSuccess(false);
-        setFormData({ first_name: '', last_name: '', email: '', phone: '', visit_date: '', bringing_kids: false });
+        setFormData({ first_name: '', last_name: '', email: '', phone: '', visit_date: '', stay_area: '', pickup_point: '',  bringing_kids: false });
+        setTimeout(() => setIsSuccess(false), 5000);
     };
 
     return (
@@ -65,9 +71,11 @@ export default function PlanVisitPage() {
                             <h3 className="text-2xl font-black uppercase italic mb-6">What to expect:</h3>
                             <ul className="space-y-6">
                                 <ExpectationItem text="A reserved parking spot just for you." />
+                                <ExpectationItem text="A warm welcome from our team." />
                                 <ExpectationItem text="A friendly host to show you around." />
-                                <ExpectationItem text="Fast-track check-in for your kids." />
-                                <ExpectationItem text="A free gift at the Connection Center." />
+                                <ExpectationItem text="A safe and fun environment for your kids." />
+                                <ExpectationItem text="A powerful worship experience." />
+                                
                             </ul>
                         </div>
 
@@ -94,6 +102,11 @@ export default function PlanVisitPage() {
                                             <FormInput label="Date of Visit" type="date" value={formData.visit_date} onChange={(v) => setFormData({...formData, visit_date: v})} required />
                                         </div>
 
+                                        <div className="grid md:grid-cols-2 gap-6">
+                                            <FormInput label="Where do you stay?" value={formData.stay_area} onChange={(v) => setFormData({...formData, stay_area: v})} required />
+                                            <FormInput label="Nearest pick up point?" value={formData.pickup_point} onChange={(v) => setFormData({...formData, pickup_point: v})} required />
+                                        </div>
+
                                         <div className="p-4 bg-orange-50 rounded-2xl border border-orange-100">
                                             <label className="flex items-center gap-3 cursor-pointer">
                                                 <input
@@ -102,8 +115,14 @@ export default function PlanVisitPage() {
                                                     onChange={(e) => setFormData({...formData, bringing_kids: e.target.checked})}
                                                     className="w-6 h-6 text-orange-600 rounded-lg border-gray-300 focus:ring-orange-500"
                                                 />
-                                                <span className="text-gray-800 font-bold uppercase text-[10px] tracking-tight">I'm bringing kids (Reach Kids Check-in)</span>
+                                                <span className="text-gray-800 font-bold uppercase text-[10px] tracking-tight">I'm bringing kids</span>
                                             </label>
+                                        </div>
+
+                                          <div className="p-4 bg-green-50 rounded-2xl border border-orange-100">
+                                           
+                                           <p>For more details and clarity call</p>
+                                           <h4 className='font-bold'>+260 972 933 416 - Deaconess Elmaih</h4>
                                         </div>
 
                                         <button
