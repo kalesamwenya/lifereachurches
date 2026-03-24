@@ -5,6 +5,7 @@ import Navbar from '@/components/header/Navbar';
 import Footer from '@/components/footer/footer';
 import { AuthProvider } from '@/context/AuthContext';
 import "../globals.css";
+import Chatbot from '@/components/Chatbot';
 
 
 export default function MainLayout({ children }) {
@@ -14,6 +15,7 @@ export default function MainLayout({ children }) {
             <Navbar />
             <main className="min-h-screen pt-0 pb-20 lg:pb-0">
                 {children}
+                <Chatbot/>
             </main>
             <Footer />
             </div>

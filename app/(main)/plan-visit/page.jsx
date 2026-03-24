@@ -102,10 +102,7 @@ export default function PlanVisitPage() {
                                             <FormInput label="Date of Visit" type="date" value={formData.visit_date} onChange={(v) => setFormData({...formData, visit_date: v})} required />
                                         </div>
 
-                                        <div className="grid md:grid-cols-2 gap-6">
-                                            <FormInput label="Where do you stay?" value={formData.stay_area} onChange={(v) => setFormData({...formData, stay_area: v})} required />
-                                            <FormInput label="Nearest pick up point?" value={formData.pickup_point} onChange={(v) => setFormData({...formData, pickup_point: v})} required />
-                                        </div>
+                                        <FormInput label="Which Area are you from?" value={formData.stay_area} onChange={(v) => setFormData({...formData, stay_area: v})} required />
 
                                         <div className="p-4 bg-orange-50 rounded-2xl border border-orange-100">
                                             <label className="flex items-center gap-3 cursor-pointer">
@@ -123,6 +120,12 @@ export default function PlanVisitPage() {
                                            
                                            <p>For more details and clarity call</p>
                                            <h4 className='font-bold'>+260 972 933 416 - Deaconess Elmaih</h4>
+
+                                           <div className="p-4 text-black font-semibold bg-gray-100 rounded-lg mt-4">
+                                            <h3>Sunday service at 09:00 AM to 13:00 PM</h3>
+                                            <h3>Thursday service at 17:00 PM to 19:00 PM</h3>
+                                            <p className='text-brand-500'>We are located at Zamise Theatre Hall, Kamwala, Lusaka, Zambia</p>
+                                           </div>
                                         </div>
 
                                         <button
