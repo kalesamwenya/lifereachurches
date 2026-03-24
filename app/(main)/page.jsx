@@ -37,7 +37,7 @@ export default function HomePage() {
        {/* <LatestSermon/> */}
 
         {/* 4. MINISTRY HIGHLIGHTS */}
-       <MinistryHighlights/>
+       {/* <MinistryHighlights/> */}
 
         {/* 5. PLAN YOUR VISIT */}
        <PlanVisitCTA/>

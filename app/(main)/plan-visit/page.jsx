@@ -117,14 +117,14 @@ export default function PlanVisitPage() {
                                         </div>
 
                                           <div className="p-4 text-black">
-                                           
-                                           <p>For more details and clarity call</p>
+                                        
+                                           <p>Need more information? We'd love to help! Call or WhatsApp</p>
                                            <h4 className='font-bold'>+260 972 933 416 - Deaconess Elmaih</h4>
 
                                            <div className="p-4 text-black font-semibold bg-gray-100 rounded-lg mt-4">
-                                            <h3>Sunday service at 09:00 AM to 13:00 PM</h3>
-                                            <h3>Thursday service at 17:00 PM to 19:00 PM</h3>
-                                            <p className='text-brand-500'>We are located at Zamise Theatre Hall, Kamwala, Lusaka, Zambia</p>
+                                            <h3>Sunday service at 9:00 AM</h3>
+                                            <h3>Thursday service at 5:00 PM</h3>
+                                            <p className='text-brand-500'>Location: Zamise, Lecture Theatre Hall, Kamwala, Lusaka, Zambia</p>
                                            </div>
                                         </div>
 
