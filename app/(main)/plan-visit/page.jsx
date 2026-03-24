@@ -58,7 +58,7 @@ export default function PlanVisitPage() {
 
     return (
         <div className="py-24 bg-gray-50 pt-32 min-h-screen">
-            <div className="container mx-auto px-6 max-w-4xl">
+            <div className="container mx-auto px-6 max-w-6xl">
                 <div className="text-center mb-12">
                     <h1 className="text-4xl md:text-5xl font-black mb-4 uppercase italic tracking-tighter">Plan Your Visit</h1>
                     <p className="text-xl text-gray-600">Let us know you're coming and we'll roll out the red carpet.</p>
@@ -119,7 +119,7 @@ export default function PlanVisitPage() {
                                             </label>
                                         </div>
 
-                                          <div className="p-4 bg-green-50 rounded-2xl border border-orange-100">
+                                          <div className="p-4 text-black">
                                            
                                            <p>For more details and clarity call</p>
                                            <h4 className='font-bold'>+260 972 933 416 - Deaconess Elmaih</h4>

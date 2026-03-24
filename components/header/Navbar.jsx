@@ -61,7 +61,7 @@ export default function Navbar() {
     ];
 
     const media = [
-        { name: 'Sermons', path: '/sermons', icon: <PlayCircle size={14} /> },
+        // { name: 'Sermons', path: '/sermons', icon: <PlayCircle size={14} /> },
         { name: 'Podcast', path: '/podcast', icon: <Mic size={14} /> },
         { name: 'Blog', path: '/blog', icon: <BookOpen size={14} /> },
         { name: 'Gallery', path: '/gallery', icon: <ImageIcon size={14} /> },
@@ -122,7 +122,7 @@ export default function Navbar() {
                     </div>
 
                     <a href="/events" className={`font-semibold text-sm uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/events' ? 'text-orange-500' : (isSolid ? 'text-gray-600' : 'text-gray-200')}`}>Events</a>
-                    <a href="/live" className={`font-semibold text-sm uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/live' ? 'text-orange-500' : (isSolid ? 'text-gray-600' : 'text-gray-200')}`}>Live</a>
+                    {/* <a href="/live" className={`font-semibold text-sm uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/live' ? 'text-orange-500' : (isSolid ? 'text-gray-600' : 'text-gray-200')}`}>Live</a> */}
                     <a href="/contact" className={`font-semibold text-sm uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/contact' ? 'text-orange-500' : (isSolid ? 'text-gray-600' : 'text-gray-200')}`}>Contact</a>
                     <a href="/education" className={`font-semibold text-sm uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/education' ? 'text-orange-500' : (isSolid ? 'text-gray-600' : 'text-gray-200')}`}>Learn</a>
 
@@ -236,7 +236,7 @@ export default function Navbar() {
                                 </div>
                             )}
                                 <div className="flex flex-col gap-4 pl-4">
-                                    <a href="/sermons" className="text-lg font-medium text-gray-700">Sermons</a>
+                                    {/* <a href="/sermons" className="text-lg font-medium text-gray-700">Sermons</a> */}
                                     <a href="/podcast" className="text-lg font-medium text-gray-700">Podcast</a>
                                     <a href="/blog" className="text-lg font-medium text-gray-700">Blog</a>
                                 </div>
@@ -258,7 +258,7 @@ export default function Navbar() {
 
                             <div className="grid grid-cols-2 gap-4 mt-8">
                                 <a href="/give"><Button className="w-full">Give</Button></a>
-                                <a href="/live"><Button variant="outline" className="w-full !text-gray-900 !border-gray-900">Live Stream</Button></a>
+                                {/* <a href="/live"><Button variant="outline" className="w-full !text-gray-900 !border-gray-900">Live Stream</Button></a> */}
                             </div>
                         </div>
                     </motion.div>

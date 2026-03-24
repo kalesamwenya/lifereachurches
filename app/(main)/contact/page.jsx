@@ -65,7 +65,7 @@ export default function ContactPage() {
                                     </div>
                                     <div>
                                         <h4 className="font-bold text-gray-900">Visit Us</h4>
-                                        <p className="text-gray-600">123 Life Reach Blvd<br/>Lusaka, Zambia</p>
+                                        <p className="text-gray-600">Zamise Theatre Hall, Kamwala, <br/>Lusaka, Zambia</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-4">
@@ -74,7 +74,7 @@ export default function ContactPage() {
                                     </div>
                                     <div>
                                         <h4 className="font-bold text-gray-900">Call Us</h4>
-                                        <p className="text-gray-600">0972338115</p>
+                                        <p className="text-gray-600">+260 972 933 416</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-4">
@@ -83,7 +83,7 @@ export default function ContactPage() {
                                     </div>
                                     <div>
                                         <h4 className="font-bold text-gray-900">Email Us</h4>
-                                        <p className="text-gray-600">hello@lifereach.church</p>
+                                        <p className="text-gray-600">lifereachchurch@gmail.com</p>
                                     </div>
                                 </div>
                             </div>

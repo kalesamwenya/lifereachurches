@@ -122,11 +122,11 @@ export default function Footer() {
                     <div>
                         <h4 className="text-white font-bold text-xl mb-8">Media & Resources</h4>
                         <ul className="space-y-4">
-                            <li>
+                            {/* <li>
                                 <a href="/sermons" className="hover:text-orange-500 transition-colors flex items-center gap-2">
                                     <ChevronRight size={16} className="text-orange-600" /> Sermons
                                 </a>
-                            </li>
+                            </li> */}
                             <li>
                                 <a href="/podcast" className="hover:text-orange-500 transition-colors flex items-center gap-2">
                                     <Mic size={16} className="text-orange-600" /> Podcast

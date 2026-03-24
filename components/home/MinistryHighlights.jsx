@@ -19,6 +19,7 @@ const Card = ({ children, className = "" }) => (
 
 import { useEffect } from 'react';
 import { fetchMinistries } from '@/utils/fetchMinistries';
+import Link from 'next/link';
 
 export default function MinistryHighlights() {
     const [ministries, setMinistries] = useState([]);
@@ -86,12 +87,12 @@ export default function MinistryHighlights() {
                                         <h3 className="text-2xl font-bold mb-2">{ministry.name || ministry.title}</h3>
                                         <p className="text-gray-300 text-sm mb-4">{
                                             (ministry.description || ministry.sub)
-                                                ? (ministry.description || ministry.sub).length > 40
-                                                    ? (ministry.description || ministry.sub).slice(0, 40) + '...'
+                                                ? (ministry.description || ministry.sub).length > 100
+                                                    ? (ministry.description || ministry.sub).slice(0, 100) + '...'
                                                     : (ministry.description || ministry.sub)
                                                 : ''
                                         }</p>
-                                        <span className="flex items-center gap-2 text-orange-400 text-sm font-bold uppercase tracking-wide group-hover:gap-4 transition-all">Learn More <ArrowRight size={16} /></span>
+                                        <Link href={`/ministries/${ministry.id || idx}`} className="flex items-center gap-2 text-orange-400 text-sm font-bold uppercase tracking-wide group-hover:gap-4 transition-all">Learn More <ArrowRight size={16} /></Link>
                                     </div>
                                 </Card>
                             );

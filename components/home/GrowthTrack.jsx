@@ -1,22 +1,48 @@
 'use client';
 import { motion } from 'framer-motion';
-import { ArrowUpRight, CheckCircle, Users, Heart, Smartphone } from 'lucide-react';
+import { ArrowUpRight, CheckCircle, Users, Heart, Smartphone, Cross, Star } from 'lucide-react';
 import { SectionTitle } from '@/components/ui/LocalComponents';
 import React from "react";
 
 export default function GrowthTrack() {
-    const nextSteps = [
-        { title: "Get Baptized", desc: "Publicly declare your faith in Jesus.", icon: <CheckCircle className="text-blue-500" /> },
-        { title: "Join a Group", desc: "Find community and do life together.", icon: <Users className="text-green-500" /> },
-        { title: "Start Serving", desc: "Use your gifts to make a difference.", icon: <Heart className="text-red-500" /> },
-        { title: "Give Online", desc: "Support the mission of the church.", icon: <Smartphone className="text-orange-500" /> },
-    ];
+  const nextSteps = [
+    { 
+        title: "Receive Jesus Christ", 
+        desc: "Begin your journey by grace through faith. — Ephesians 2:8", 
+        icon: <Cross className="text-purple-600" /> 
+    },
+    { 
+        title: "Discipleship", 
+        desc: "Be transformed by the renewing of your mind. — Romans 12:2", 
+        icon: <Star className="text-amber-500" /> 
+    },
+    { 
+        title: "Get Baptized", 
+        desc: "Publicly declare your new life in Him. — Acts 2:38", 
+        icon: <CheckCircle className="text-blue-500" /> 
+    },
+    { 
+        title: "Join a Group", 
+        desc: "Do life together in true community. — Hebrews 10:24-25", 
+        icon: <Users className="text-green-500" /> 
+    },
+    { 
+        title: "Start Serving", 
+        desc: "Use your God-given gifts for others. — 1 Peter 4:10", 
+        icon: <Heart className="text-red-500" /> 
+    },
+    { 
+        title: "Give Online", 
+        desc: "Honoring God with our firstfruits. — Proverbs 3:9", 
+        icon: <Smartphone className="text-orange-500" /> 
+    },
+];
 
     return (
         <section className="py-24 bg-white">
             <div className="container mx-auto px-6">
                 <SectionTitle title="Take Your Next Step" subtitle="Growth Track" />
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6">
                     {nextSteps.map((step, idx) => (
                         <motion.div
                             key={idx}

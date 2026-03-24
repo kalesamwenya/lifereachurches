@@ -1,5 +1,5 @@
 'use client';
-import { Coffee, Baby, Car } from 'lucide-react';
+import { Coffee, Baby, Car, Cross } from 'lucide-react';
 import { Button } from '@/components/ui/LocalComponents';
 import {motion} from "framer-motion";
 import React from "react";
@@ -18,8 +18,8 @@ const SectionTitle = ({ title, subtitle, centered = true, dark = false }) => (
 );
 
 export default function PlanVisitCTA() {
-    const steps = [
-        { icon: Coffee, title: "Coffee's On Us", desc: "Grab a free hot coffee or tea at our Reach Café in the lobby." },
+        const steps = [
+            { icon: Cross, title: "Powerful Worship and Transformation", desc: "Grab a free hot coffee or tea at our Reach Café in the lobby." },
         { icon: Baby, title: "Safe for Kids", desc: "Our Reach Kids environment is safe, secure, and fun." },
         { icon: Car, title: "Easy Parking", desc: "Look for the 'First Time Guest' signs for a spot close to the entrance." }
     ];
@@ -35,10 +35,10 @@ export default function PlanVisitCTA() {
                 <div className="grid md:grid-cols-3 gap-8">
                     <div className="text-center p-8 bg-white/10 rounded-3xl backdrop-blur-sm border border-white/10 hover:bg-white/20 transition-colors">
                         <div className="w-16 h-16 bg-white text-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl rotate-3">
-                            <Coffee size={32} />
+                            <Cross size={32} />
                         </div>
-                        <h3 className="text-xl font-bold mb-3">Coffee's On Us</h3>
-                        <p className="text-orange-100 leading-relaxed">Arrive a few minutes early and grab a free hot coffee or tea at our Reach Café in the lobby.</p>
+                        <h3 className="text-xl font-bold mb-3">Powerful Worship and Transformation</h3>
+                        <p className="text-orange-100 leading-relaxed">Experience a morning of heartfelt prayer and powerful worship, followed by deep biblical teachings and meaningful interactions that inspire real growth.</p>
                     </div>
                     <div className="text-center p-8 bg-white/10 rounded-3xl backdrop-blur-sm border border-white/10 hover:bg-white/20 transition-colors">
                         <div className="w-16 h-16 bg-white text-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl -rotate-2">

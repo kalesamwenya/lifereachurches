@@ -244,16 +244,26 @@ export default function TestimonySubmitPage() {
 
                                 {/* Testimony Area */}
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-3">Your Testimony</label>
+                                    <label className="block text-sm font-bold text-gray-700 mb-3">Your Testimony (A Summary)</label>
                                     <div className="relative">
-                                <textarea
-                                    required
-                                    rows="6"
-                                    value={formData.testimony}
-                                    onChange={(e) => setFormData({...formData, testimony: e.target.value})}
-                                    className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-4 focus:ring-orange-100 focus:border-orange-500 outline-none transition-all bg-gray-50 focus:bg-white resize-none"
-                                    placeholder="Share what God has done..."
-                                ></textarea>
+                               <div className="relative">
+    <textarea
+        required
+        rows="6"
+        value={formData.testimony}
+        onChange={(e) => {
+            const words = e.target.value.trim().split(/\s+/);
+            if (words.length <= 250 || e.target.value.length < formData.testimony.length) {
+                setFormData({...formData, testimony: e.target.value});
+            }
+        }}
+        className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-4 focus:ring-orange-100 focus:border-orange-500 outline-none transition-all bg-gray-50 focus:bg-white resize-none"
+        placeholder="Share what God has done..."
+    ></textarea>
+    <p className="text-right text-xs text-gray-400 mt-2">
+        {formData.testimony.trim() === "" ? 0 : formData.testimony.trim().split(/\s+/).length} / 250 words
+    </p>
+</div>
                                         <div className="absolute bottom-4 right-4 text-xs text-gray-400 pointer-events-none">
                                             {formData.testimony.length} chars
                                         </div>
