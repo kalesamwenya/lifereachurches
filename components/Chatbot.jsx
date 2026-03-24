@@ -99,10 +99,11 @@ export default function Chatbot() {
           <div className={`${brand.headerGradient} p-4 text-white flex items-center justify-between shadow-md`}>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm border border-white/30 text-white">
-                <IconBot />
+                {/* <IconBot /> */}
+                <h1>R</h1>
               </div>
               <div>
-                <h3 className="font-bold text-sm">Support Assistant</h3>
+                <h3 className="font-bold text-sm">Revelator</h3>
                 <div className="flex items-center gap-1.5">
                   <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
                   <span className="text-xs text-emerald-50 opacity-90">Online</span>

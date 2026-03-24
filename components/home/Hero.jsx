@@ -78,7 +78,7 @@ export default function Hero() {
                         {heroContent.subtitle}
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 md:gap-6 justify-center">
-                        <a href={heroContent.button1_link}><Button className="w-full sm:w-auto !px-8 !py-4 text-lg">{heroContent.button1_text}</Button></a>
+                        {/* <a href={heroContent.button1_link}><Button className="w-full sm:w-auto !px-8 !py-4 text-lg">{heroContent.button1_text}</Button></a> */}
                         <a href={heroContent.button2_link}><Button variant="outline" className="w-full sm:w-auto !px-8 !py-4 text-lg">{heroContent.button2_text}</Button></a>
                     </div>
                 </motion.div>
