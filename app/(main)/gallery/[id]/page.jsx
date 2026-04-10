@@ -39,7 +39,7 @@ export default function GalleryPage() {
             if (response.data.success) {
                 setGallery(response.data.gallery);
                 // Load likes specific to this gallery ID
-                const savedLikes = localStorage.getItem(`emit_likes_${id}`);
+                const savedLikes = localStorage.getItem(`reach_likes_${id}`);
                 if (savedLikes) setLikedImages(JSON.parse(savedLikes));
             } else {
                 setError('Gallery not found');
@@ -59,25 +59,20 @@ export default function GalleryPage() {
             : [...likedImages, imgId];
         
         setLikedImages(newLikes);
-        localStorage.setItem(`emit_likes_${id}`, JSON.stringify(newLikes));
+        localStorage.setItem(`reach_likes_${id}`, JSON.stringify(newLikes));
     };
 
-    const handleDownload = async (url) => {
-        try {
-            const response = await fetch(url);
-            const blob = await response.blob();
-            const blobURL = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = blobURL;
-            link.download = `Emit_Photo_${id}_${currentImageIndex + 1}.jpg`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(blobURL);
-        } catch (e) {
-            window.open(url, '_blank');
-        }
-    };
+const handleDownload = (imagePath) => {
+    const downloadUrl = `${API_URL}/gallery/download.php?file=${encodeURIComponent(imagePath)}`;
+
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.setAttribute('download', '');
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+};
 
     useEffect(() => {
         const handleKeyDown = (e) => {
@@ -94,7 +89,7 @@ export default function GalleryPage() {
     // Update meta tags dynamically for SEO
     useEffect(() => {
         if (gallery) {
-            const siteName = "IfeReach Church";
+            const siteName = "Life Reach Church";
             const metaDescription = gallery.description || `View ${gallery.image_count || 0} beautiful photos from ${gallery.title}`;
             const coverImage = gallery.featured_image_url || gallery.images?.[0]?.image_url;
             const pageUrl = typeof window !== 'undefined' ? window.location.href : '';
@@ -133,7 +128,7 @@ export default function GalleryPage() {
         <div className="min-h-screen flex items-center justify-center bg-white">
             <div className="animate-pulse flex flex-col items-center">
                 <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mb-4" />
-                <p className="text-sm font-bold tracking-widest text-gray-400 uppercase">Emit Photography</p>
+                <p className="text-sm font-bold tracking-widest text-gray-400 uppercase">Life Reach Media</p>
             </div>
         </div>
     );
@@ -204,31 +199,59 @@ export default function GalleryPage() {
                 </div>
             </main>
 
+            <div className="">
+                {/* description */}
+            </div>
+
             {/* 3. High-End Lightbox */}
             <AnimatePresence>
                 {lightboxOpen && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black flex flex-col">
-                        <div className="p-6 flex justify-between items-center text-white z-10 bg-gradient-to-b from-black/80 to-transparent">
-                            <div className="flex flex-col">
-                                <span className="text-[10px] font-black tracking-[0.2em] uppercase text-orange-500">Emit Photography</span>
-                                <span className="text-xs font-medium text-white/60">{currentImageIndex + 1} / {gallery.images.length}</span>
-                            </div>
-                            <div className="flex items-center gap-4 md:gap-8">
-                                <button 
-                                    onClick={() => toggleLike(gallery.images[currentImageIndex].id)}
-                                    className={`flex items-center gap-2 transition-colors ${likedImages.includes(gallery.images[currentImageIndex].id) ? 'text-red-500' : 'text-white/80 hover:text-red-400'}`}
-                                >
-                                    <Heart size={24} fill={likedImages.includes(gallery.images[currentImageIndex].id) ? "currentColor" : "none"} />
-                                    <span className="hidden sm:inline text-xs font-bold uppercase tracking-widest">Like</span>
-                                </button>
-                                <button onClick={() => handleDownload(getImageUrl(gallery.images[currentImageIndex].image_url))} className="flex items-center gap-2 text-white/80 hover:text-orange-500 transition-colors text-xs font-bold uppercase tracking-widest">
-                                    <Download size={22} /> <span className="hidden sm:inline">Download</span>
-                                </button>
-                                <button onClick={() => setLightboxOpen(false)} className="w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full transition-all hover:rotate-90">
-                                    <X size={28} />
-                                </button>
-                            </div>
-                        </div>
+                        <div className="absolute top-16 left-0 w-full p-6 flex justify-between items-start text-white z-20 bg-gradient-to-b from-black/80 to-transparent">
+    
+    {/* Left: Info */}
+    <div className="flex flex-col">
+        <span className="text-[10px] font-black tracking-[0.2em] uppercase text-orange-500">
+            Life Reach Media
+        </span>
+        <span className="text-xs font-medium text-white/60">
+            {currentImageIndex + 1} / {gallery.images.length}
+        </span>
+    </div>
+
+    {/* Right: Actions */}
+    <div className="flex items-center gap-3">
+        
+        {/* Share */}
+        <button
+            onClick={() => {
+                const url = getImageUrl(gallery.images[currentImageIndex].image_url);
+                navigator.clipboard.writeText(url);
+                setLinkCopied(true);
+                setTimeout(() => setLinkCopied(false), 2000);
+            }}
+            className="w-11 h-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-orange-500 transition-all backdrop-blur-md"
+        >
+            {linkCopied ? <Check size={20} /> : <Share2 size={20} />}
+        </button>
+
+        {/* Download */}
+       <button
+    onClick={() =>handleDownload(gallery.images[currentImageIndex].image_url)}
+    className="w-11 h-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-orange-500 transition-all backdrop-blur-md"
+>
+    <Download size={20} />
+</button>
+
+        {/* Close */}
+        <button
+            onClick={() => setLightboxOpen(false)}
+            className="w-11 h-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-red-500 transition-all backdrop-blur-md"
+        >
+            <X size={22} />
+        </button>
+    </div>
+</div>
 
                         <div className="flex-grow relative flex items-center justify-center p-4">
                             <button onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(prev => (prev - 1 + gallery.images.length) % gallery.images.length); }} className="absolute left-4 md:left-8 z-20 p-4 text-white/20 hover:text-orange-500 transition-all"><ChevronLeft size={60} strokeWidth={1} /></button>
@@ -254,7 +277,7 @@ export default function GalleryPage() {
                         <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-white rounded-[40px] p-10 max-w-sm w-full shadow-2xl text-center" onClick={e => e.stopPropagation()}>
                             <div className="w-16 h-16 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-6"><Share2 size={32} /></div>
                             <h3 className="text-3xl font-black mb-2 italic">Share Gallery</h3>
-                            <p className="text-gray-500 mb-8 text-sm">Let others experience the moments captured by Emit Photography.</p>
+                            <p className="text-gray-500 mb-8 text-sm">Let others experience the moments captured by Life Reach Media.</p>
                             <div className="space-y-3">
                                 <button onClick={() => { navigator.clipboard.writeText(window.location.href); setLinkCopied(true); setTimeout(() => setLinkCopied(false), 2000); }} className="w-full py-4 bg-gray-50 rounded-2xl flex items-center justify-center gap-3 hover:bg-orange-50 transition-colors border border-gray-100">
                                     {linkCopied ? <Check className="text-green-600" size={20} /> : <LinkIcon size={20} />}

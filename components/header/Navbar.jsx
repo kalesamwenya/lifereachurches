@@ -41,7 +41,7 @@ export default function Navbar() {
         router.push('/auth');
     };
 
-    const transparentPages = ['/', '/about', '/events', '/podcast', '/live', '/education'];
+    const transparentPages = ['/', '/about', '/events', '/podcast', '/live', '/education', '/gallery'];
     const isTransparentPage = transparentPages.includes(pathname);
 
     // Update: Navbar becomes solid if scrolled, OR not a transparent page, OR if the menu is open

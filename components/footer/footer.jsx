@@ -16,7 +16,7 @@ export default function Footer() {
     const [churchSettings, setChurchSettings] = useState(null);
 
     const pathname = usePathname();
-    const transparentPages = ['/', '/about', '/events', '/podcast','/contact', '/sermons', '/blog', '/library', '/education', '/plan-visit'];
+    const transparentPages = ['/', '/about', '/events', '/podcast','/contact', '/sermons', '/blog', '/library', '/education', '/plan-visit', '/gallery'];
     const isTransparentPage = transparentPages.includes(pathname);
 
     useEffect(() => {
@@ -37,6 +37,7 @@ export default function Footer() {
     const churchAddress = churchSettings?.address || 'Zamise Theater Hall, Kamwala, Lusaka';
     const churchPhone = churchSettings?.phone || '762585742';
     const churchEmail = churchSettings?.email || 'lifereachchurch@gmail.com';
+    const churchAbout = churchSettings?.about || 'We are a Christ-centered church committed to loving God, growing in faith, and impacting our world. Led by visionary Prophet Gomezyo Shamane, we exist to build a spiritual family where people are grounded in God’s Word, empowered by the Holy Spirit, and equipped to live transformed lives.'
     
     // Social media links from DB
     const socialLinks = [
@@ -80,12 +81,12 @@ export default function Footer() {
                                     alt={`life reach church logo`}
                                 />
                             </div>
-                            {churchName}
+                            <span className='text-white'>{churchName}</span>
                         </div>
-                        <p className="mb-8 leading-relaxed text-gray-400">
-                            Reaching the lost, Raising disciples, and Releasing leaders. Join the movement.
+                        <p className="mt-5 leading-relaxed text-gray-400">
+                           {churchAbout}
                         </p>
-                        <div className="flex gap-4">
+                        <div className="flex gap-4 mt-2">
                             {socialLinks.map((social, i) => (
                                 <a 
                                     key={i} 

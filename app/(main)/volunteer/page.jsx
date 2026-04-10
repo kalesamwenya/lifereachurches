@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import {BsBalloon, BsBalloonFill} from "react-icons/bs";
 import {BiMicrophone} from "react-icons/bi";
+import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
 
 const API_URL = 'https://content.lifereachchurch.org';
@@ -278,6 +279,7 @@ export default function VolunteerPage() {
     const [error, setError] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedDept, setSelectedDept] = useState('');
+    const { user, isAuthenticated, logout } = useAuth();
 
     useEffect(() => {
         fetchDepartmentsAndWings();
@@ -388,16 +390,19 @@ export default function VolunteerPage() {
                                             <User size={14} /> Lead: {dept.leader_name}
                                         </div>
                                     )}
-                                    <div className="flex items-center gap-2 text-sm font-bold text-orange-600 group-hover:gap-3 transition-all">
+                                    {isAuthenticated && user ? (
+<div className="flex items-center gap-2 text-sm font-bold text-orange-600 group-hover:gap-3 transition-all">
                                         Join Team <ArrowRight size={16} />
                                     </div>
+                                    ) : ("")}
+                                    
                                 </Card>
                             </motion.div>
                         ))}
                     </div>
                 )}
 
-                {/* General Application CTA */}
+                {isAuthenticated && user ? (
                 <div className="text-center">
                     <p className="text-gray-500 mb-4">Don't see a specific fit?</p>
                     <button
@@ -407,6 +412,11 @@ export default function VolunteerPage() {
                         Complete a General Application
                     </button>
                 </div>
+
+                ) : ("")
+                }
+
+                
             </div>
 
             {/* Volunteer Wizard Modal */}

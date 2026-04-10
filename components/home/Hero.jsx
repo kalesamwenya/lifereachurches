@@ -9,9 +9,9 @@ const API_URL = 'https://content.lifereachchurch.org';
 export default function Hero() {
     // Hero content state
     const [heroContent, setHeroContent] = useState({
-        title_line1: 'REACHING',
-        title_line2: 'EVERY SOUL',
-        subtitle: 'We are a movement dedicated to showing the world that Jesus is alive, and He changes everything.',
+        title_line1: 'THE YEAR OF',
+        title_line2: 'GREAT EXPLOITS',
+        subtitle: 'Preach | Teach | Reach | Lives',
         badge_text: 'Welcome Home',
         button1_text: 'Watch Online',
         button1_link: '/live',

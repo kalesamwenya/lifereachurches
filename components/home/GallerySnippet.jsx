@@ -63,8 +63,8 @@ export default function GallerySnippet() {
                                 viewport={{ once: true }}
                                 transition={{ delay: idx * 0.1 }}
                                 whileHover={{ scale: 1.02 }}
-                                className="rounded-[2.5rem] overflow-hidden shadow-2xl relative group h-80 cursor-pointer"
-                                onClick={() => window.location.href = '/gallery'}
+                                className="rounded-[1.5rem] overflow-hidden shadow-2xl relative group h-80 cursor-pointer"
+                                onClick={() => window.location.href = `/gallery/${img.id}`}
                             >
                                 <img
                                     src={getImageUrl(img.featured_image_url)}
