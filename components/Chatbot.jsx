@@ -89,12 +89,12 @@ export default function Chatbot() {
 
       {/* Chat Window */}
       {open && (
-        <div className={`
-          flex flex-col bg-white shadow-2xl transition-all duration-300 ease-in-out border border-gray-100
-          ${typeof window !== 'undefined' && window.innerWidth < 640 
-            ? 'fixed inset-0 w-full h-full rounded-none' 
-            : 'w-96 h-[550px] rounded-2xl mb-2 overflow-hidden'}
-        `}>
+  <div className="
+    flex flex-col bg-white shadow-2xl transition-all duration-300 ease-in-out border border-gray-100
+    fixed bottom-0 right-0 left-0 w-full h-[calc(100vh-70px)] 
+    sm:bottom-6 sm:right-6 sm:left-auto sm:w-96 sm:h-[550px] sm:rounded-2xl 
+    overflow-hidden
+  ">
           {/* Header */}
           <div className={`${brand.headerGradient} p-4 text-white flex items-center justify-between shadow-md`}>
             <div className="flex items-center gap-3">
