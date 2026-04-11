@@ -200,7 +200,7 @@ const handleDownload = (imagePath) => {
             </main>
 
             <div className="">
-                {/* description */}
+                {/*  */}
             </div>
 
             {/* 3. High-End Lightbox */}
