@@ -15,7 +15,7 @@ export const viewport = {
 export const metadata = {
     metadataBase: new URL('https://lifereachchurch.org'), // Replace with actual domain in production
     title: {
-        default: 'Life Reach Church | Reaching Every Soul',
+        default: 'Life Reach Church | Great Exploits',
         template: '%s | Life Reach Church',
     },
     description: 'Welcome to Life Reach Church in Lusaka, Zambia. We exist to reach the lost, raise disciples, and release leaders. Join us for authentic community and powerful worship.',
@@ -30,7 +30,7 @@ export const metadata = {
     },
     // Open Graph (Facebook, LinkedIn, WhatsApp)
     openGraph: {
-        title: 'Life Reach Church | Reaching Every Soul',
+        title: 'Life Reach Church | Great Exploits',
         description: 'We are a movement dedicated to showing the world that Jesus is alive. Join us for Sunday services at 9AM & 11AM.',
         url: 'https://lifereachchurch.org',
         siteName: 'Life Reach Church',
