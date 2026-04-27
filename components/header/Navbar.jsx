@@ -191,7 +191,9 @@ export default function Navbar() {
                             </div>
 
                             <a href="/" className="text-2xl font-bold text-gray-900 border-b border-gray-100 pb-4">Home</a>
+                            <a href="/billboard" className={`font-semibold text-sm uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/' ? 'text-orange-500' : (isSolid ? 'text-gray-600' : 'text-gray-200')}`}>Billboard</a>
                             <a href="/about" className="text-2xl font-bold text-gray-900 border-b border-gray-100 pb-4">About</a>
+                            <a href="/get-to-know" className={`font-semibold text-sm uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/' ? 'text-orange-500' : (isSolid ? 'text-gray-600' : 'text-gray-200')}`}>Ask</a>
 
                             <div className="border-b border-gray-100 pb-4">
                                 <p className="text-xs font-bold text-gray-400 uppercase mb-4">Media</p>
