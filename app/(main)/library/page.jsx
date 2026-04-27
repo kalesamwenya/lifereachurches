@@ -90,60 +90,76 @@ export default function LibraryPage() {
                     </div>
                 ) : (
                     <>
-                        <div className="grid max-sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                            <AnimatePresence mode="popLayout">
-                                {books.map((book, index) => (
-                                    <motion.div
-                                        key={book.id}
-                                        layout
-                                        initial={{ opacity: 0, scale: 0.9 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 0.9 }}
-                                        transition={{ delay: index * 0.05 }}
-                                    >
-                                        <Card className="flex flex-col h-full group">
-                                            <div
-                                                className="h-72 overflow-hidden bg-gray-200 relative cursor-pointer"
-                                                onClick={() => window.location.href = `/library/${book.id}`}
-                                            >
-                                                <img
-                                                    src={`https://content.lifereachchurch.org/${book.cover_url || book.image}`}
-                                                    alt={book.title}
-                                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                                />
-                                                <div className="absolute top-4 left-4 bg-orange-600 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">
-                                                    {book.category || 'Resources'}
-                                                </div>
-                                            </div>
-
-                                            <div className="p-8 flex flex-col flex-grow">
-                                                <h3 className="text-2xl font-black italic uppercase tracking-tighter text-gray-900 mb-2 leading-tight group-hover:text-orange-600 transition-colors">
-                                                    {book.title}
-                                                </h3>
-                                                <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-4">By {book.author}</p>
-
-                                                <div className="flex items-center gap-1 text-yellow-400 mb-8">
-                                                    {[1,2,3,4,5].map(i => (
-                                                        <Star key={i} size={14} fill={i <= Math.round(book.rating || 5) ? "currentColor" : "none"} className={i > Math.round(book.rating || 5) ? "text-gray-200" : ""} />
-                                                    ))}
-                                                    <span className="text-gray-400 text-[10px] font-bold ml-2">({book.rating || '5.0'})</span>
-                                                </div>
-
-                                                <div className="mt-auto pt-6 border-t border-gray-50">
-                                                    <Button
-                                                        onClick={() => window.location.href = `/library/${book.id}`}
-                                                        variant="secondary"
-                                                        className="w-full text-[10px] font-black uppercase tracking-widest border-2 hover:border-orange-600 hover:text-orange-600"
-                                                    >
-                                                        View Details
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        </Card>
-                                    </motion.div>
-                                ))}
-                            </AnimatePresence>
+                        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-10">
+    <AnimatePresence mode="popLayout">
+        {books.map((book, index) => (
+            <motion.div
+                key={book.id}
+                layout
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ delay: index * 0.05 }}
+            >
+                <Card className="flex flex-col h-full group border-none sm:border-solid shadow-md sm:shadow-xl">
+                    {/* Image Section - Height adjusted for mobile */}
+                    <div
+                        className="h-48 sm:h-72 overflow-hidden bg-gray-200 relative cursor-pointer rounded-2xl sm:rounded-none"
+                        onClick={() => window.location.href = `/library/${book.id}`}
+                    >
+                        <img
+                            src={`https://content.lifereachchurch.org/${book.cover_url || book.image}`}
+                            alt={book.title}
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        />
+                        {/* Category Label - Hidden on very small screens to save space */}
+                        <div className="hidden sm:block absolute top-4 left-4 bg-orange-600 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">
+                            {book.category || 'Resources'}
                         </div>
+                    </div>
+
+                    {/* Content Section - Minimal for mobile, Full for desktop */}
+                    <div className="p-3 sm:p-8 flex flex-col flex-grow">
+                        <h3 className="text-sm sm:text-1xl font-black uppercase tracking-tighter text-gray-900 mb-1 sm:mb-2 leading-tight group-hover:text-orange-600 transition-colors line-clamp-2">
+                            {book.title}
+                        </h3>
+                        <p className="text-gray-400 text-[8px] sm:text-[10px] font-black uppercase tracking-widest mb-2 sm:mb-4">
+                            By {book.author}
+                        </p>
+
+                        {/* Desktop Only Elements: Stars & Button */}
+                        <div className="hidden sm:block">
+                            <div className="flex items-center gap-1 text-yellow-400 mb-8">
+                                {[1, 2, 3, 4, 5].map(i => (
+                                    <Star key={i} size={14} fill={i <= Math.round(book.rating || 5) ? "currentColor" : "none"} className={i > Math.round(book.rating || 5) ? "text-gray-200" : ""} />
+                                ))}
+                                <span className="text-gray-400 text-[10px] font-bold ml-2">({book.rating || '5.0'})</span>
+                            </div>
+
+                            <div className="mt-auto pt-6 border-t border-gray-50">
+                                <Button
+                                    onClick={() => window.location.href = `/library/${book.id}`}
+                                    variant="secondary"
+                                    className="w-full text-[10px] font-black uppercase tracking-widest border-2 hover:border-orange-600 hover:text-orange-600"
+                                >
+                                    View Details
+                                </Button>
+                            </div>
+                        </div>
+                        
+                        {/* Mobile Only: Simple Link */}
+                        <button 
+                            onClick={() => window.location.href = `/library/${book.id}`}
+                            className="sm:hidden text-[9px] font-bold text-orange-600 uppercase tracking-tighter text-left"
+                        >
+                            View →
+                        </button>
+                    </div>
+                </Card>
+            </motion.div>
+        ))}
+    </AnimatePresence>
+</div>
 
                         {/* Pagination Controls */}
                         {totalPages > 1 && (
@@ -186,7 +202,7 @@ export default function LibraryPage() {
             {/* --- NEW SALES CALL TO ACTION --- */}
                 <div className="mt-20 text-center bg-white p-10 rounded-[3rem] shadow-xl border border-gray-100 max-w-4xl mx-auto">
                     <h3 className="text-2xl font-bold text-gray-900 mb-2">Ready to work with us?</h3>
-                    <p className="text-gray-500 mb-8">Our sales team is available to discuss your next project or event.</p>
+                    <p className="text-gray-500 mb-8">Our sales team is available to discuss your next reading and learning journey.</p>
                     
                     <div className="flex flex-col md:flex-row justify-center items-center gap-4">
                         {/* Primary Phone CTA */}
