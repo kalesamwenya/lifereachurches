@@ -18,60 +18,63 @@ const Card = ({ children, className = "" }) => (
 
 export default function Testimonials() {
     const [testimonials, setTestimonials] = useState([]);
-    const [currentTestimonial, setCurrentTestimonial] = useState(0);
+    const [currentPage, setCurrentPage] = useState(0);
     const [loading, setLoading] = useState(true);
+    const [isMobile, setIsMobile] = useState(false);
 
-    // 1. Fetch testimonies from DB
-   useEffect(() => {
-    const fetchTestimonies = async () => {
-        try {
-            const res = await axios.get(`${API_URL}/testimonies/get.php`);
+    // Detect screen size for responsive logic
+    useEffect(() => {
+        const checkSize = () => {
+            setIsMobile(window.innerWidth < 1024);
+        };
+        checkSize();
+        window.addEventListener('resize', checkSize);
+        return () => window.removeEventListener('resize', checkSize);
+    }, []);
 
-            const formatted = res.data
-                .filter(t => t.status === 'approved') // only show approved on frontend
-                .map(t => ({
-                    id: t.id,
-                    name: t.full_name,
-                    quote: t.testimony,
-                    role: t.location || 'Church Member',
-                }));
+    const itemsPerPage = isMobile ? 1 : 3;
 
-            setTestimonials(formatted);
-        } catch (err) {
-            console.error("Failed to load testimonies", err);
-        } finally {
-            setLoading(false);
-        }
-    };
+    useEffect(() => {
+        const fetchTestimonies = async () => {
+            try {
+                const res = await axios.get(`${API_URL}/testimonies/get.php`);
+                const formatted = res.data
+                    .filter(t => t.status === 'approved')
+                    .map(t => ({
+                        id: t.id,
+                        name: t.full_name,
+                        quote: t.testimony,
+                        role: t.location || 'Church Member',
+                    }));
+                setTestimonials(formatted);
+            } catch (err) {
+                console.error("Failed to load testimonies", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchTestimonies();
+    }, []);
 
-    fetchTestimonies();
-}, []);
-
-
-    const slides = testimonials.reduce((acc, t, idx) => {
-        if (idx % 2 === 0) acc.push([t]);
-        else acc[acc.length - 1].push(t);
+    // Create pages based on the current itemsPerPage
+    const pages = testimonials.reduce((acc, t, idx) => {
+        const pageIndex = Math.floor(idx / itemsPerPage);
+        if (!acc[pageIndex]) acc[pageIndex] = [];
+        acc[pageIndex].push(t);
         return acc;
     }, []);
 
-    // 2. Auto-advance carousel
-   useEffect(() => {
-    if (!slides.length) return;
+    // Auto-advance
+    useEffect(() => {
+        if (pages.length === 0) return;
+        const timer = setInterval(() => {
+            setCurrentPage((prev) => (prev + 1) % pages.length);
+        }, 8000);
+        return () => clearInterval(timer);
+    }, [pages.length]);
 
-    const timer = setInterval(() => {
-        setCurrentTestimonial(prev => (prev + 1) % slides.length);
-    }, 8000);
-
-    return () => clearInterval(timer);
-}, [slides]);
-
-    const nextTestimonial = () => {
-        setCurrentTestimonial((prev) => (prev + 1) % slides.length);
-    };
-
-    const prevTestimonial = () => {
-        setCurrentTestimonial((prev) => (prev - 1 + slides.length) % slides.length);
-    };
+    const nextSlide = () => setCurrentPage((prev) => (prev + 1) % pages.length);
+    const prevSlide = () => setCurrentPage((prev) => (prev - 1 + pages.length) % pages.length);
 
     if (loading) return (
         <div className="py-24 flex justify-center items-center bg-gray-50">
@@ -86,40 +89,39 @@ export default function Testimonials() {
             <div className="container mx-auto px-6 relative z-10">
                 <SectionTitle title="Stories of Change" subtitle="Real People. Real God." />
 
-                <div className="max-w-8xl mx-auto relative">
+                <div className="max-w-7xl mx-auto relative">
                     <AnimatePresence mode='wait'>
                         <motion.div
-                            key={currentTestimonial}
-                            initial={{ opacity: 0, x: 50 }}
+                            key={`${currentPage}-${itemsPerPage}`}
+                            initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -50 }}
-                            transition={{ duration: 0.5 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            transition={{ duration: 0.4 }}
                             className="w-full"
                         >
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                {(slides[currentTestimonial] || []).map((item) => (
-                                    <Card key={item.id} className="p-10 md:p-12 border border-gray-100 flex flex-col md:flex-row gap-8 items-center text-center md:text-left shadow-2xl relative min-h-[400px]">
-                                        <Quote className="absolute top-8 right-8 text-orange-100 w-24 h-24 rotate-12 opacity-50" fill="currentColor" />
-
-                                        <div className="flex-shrink-0 relative">
-                                            <div className="w-28 h-28 md:w-40 md:h-40 rounded-full p-2 border-2 border-dashed border-orange-200 flex items-center justify-center bg-orange-50">
-                                                {/* Since DB doesn't have images yet, we use a styled initial or placeholder */}
-                                                <span className="text-5xl font-black text-orange-200 uppercase">
-                                                    {item?.name?.charAt(0)}
-                                                </span>
-                                            </div>
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                {(pages[currentPage] || []).map((item) => (
+                                    <Card key={item.id} className="p-8 border border-gray-100 flex flex-col items-center text-center shadow-xl relative min-h-[420px]">
+                                        <Quote className="absolute top-4 right-4 text-orange-100 w-16 h-16 opacity-50" fill="currentColor" />
+                                        
+                                        <div className="w-20 h-20 rounded-full border-2 border-dashed border-orange-200 flex items-center justify-center bg-orange-50 mb-6 shrink-0">
+                                            <span className="text-3xl font-black text-orange-200 uppercase">
+                                                {item?.name?.charAt(0)}
+                                            </span>
                                         </div>
-                                        <div className="relative z-10 flex-1">
-                                            <Quote className="text-orange-500 mb-6 mx-auto md:mx-0 w-8 h-8" fill="currentColor" />
-                                            <p className="text-lg md:text-xl font-medium text-gray-800 mb-8 italic leading-relaxed">
+
+                                        <div className="flex-1 flex flex-col justify-center">
+                                            <Quote className="text-orange-500 mb-4 mx-auto w-6 h-6" fill="currentColor" />
+                                            <p className="text-md font-medium text-gray-800 mb-6 italic leading-relaxed line-clamp-6">
                                                 "{item?.quote}"
                                             </p>
-                                            <div>
-                                                <h4 className="text-xl md:text-2xl font-bold text-gray-900 mb-1">{item?.name}</h4>
-                                                <span className="text-xs md:text-sm text-orange-600 font-bold uppercase tracking-wide bg-orange-50 px-3 py-1 rounded-full">
-                                                    {item?.role}
-                                                </span>
-                                            </div>
+                                        </div>
+
+                                        <div className="mt-auto pt-4">
+                                            <h4 className="text-lg font-bold text-gray-900 mb-1">{item?.name}</h4>
+                                            <span className="text-[10px] text-orange-600 font-bold uppercase tracking-widest bg-orange-50 px-3 py-1 rounded-full">
+                                                {item?.role}
+                                            </span>
                                         </div>
                                     </Card>
                                 ))}
@@ -127,33 +129,38 @@ export default function Testimonials() {
                         </motion.div>
                     </AnimatePresence>
 
-                    {/* Navigation Controls */}
-                    <div className="flex justify-center items-center gap-4 mt-8" hidden>
-                        <button onClick={prevTestimonial} className="w-12 h-12 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-orange-600 hover:text-white transition-all shadow-sm">
-                            <ChevronLeft size={20} />
-                        </button>
-                        <div className="flex gap-2">
-                            {slides.map((_, idx) => (
-                                <button
-                                    key={idx}
-                                    onClick={() => setCurrentTestimonial(idx)}
-                                    className={`h-2 rounded-full transition-all ${idx === currentTestimonial ? 'w-8 bg-orange-600' : 'w-2 bg-gray-300 hover:bg-gray-400'}`}
-                                />
-                            ))}
-                        </div>
-                        <button onClick={nextTestimonial} className="w-12 h-12 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-orange-600 hover:text-white transition-all shadow-sm">
-                            <ChevronRight size={20} />
-                        </button>
-                    </div>
+                    {/* Navigation Dots & Arrows */}
+                    {pages.length > 1 && (
+                        <div className="flex justify-center items-center gap-6 mt-12">
+                            <button onClick={prevSlide} className="p-3 rounded-full bg-white border border-gray-200 text-gray-600 hover:bg-orange-600 hover:text-white transition-all shadow-sm">
+                                <ChevronLeft size={20} />
+                            </button>
+                            
+                            <div className="flex gap-2">
+                                {pages.map((_, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => setCurrentPage(idx)}
+                                        className={`h-2 rounded-full transition-all duration-300 ${idx === currentPage ? 'w-8 bg-orange-600' : 'w-2 bg-gray-300'}`}
+                                    />
+                                ))}
+                            </div>
 
-                    <div className="mt-12 text-center">
-                        <p className="text-gray-500 mb-4 font-medium">Has God done something amazing in your life?</p>
-                        <a href="/testimonies/submit">
-                            <Button variant="secondary" className="mx-auto !border-orange-200 text-orange-600 hover:!bg-orange-50 shadow-md py-6 px-8 rounded-2xl font-black uppercase tracking-widest text-xs">
-                                <PenTool size={16} /> Share Your Story
-                            </Button>
-                        </a>
-                    </div>
+                            <button onClick={nextSlide} className="p-3 rounded-full bg-white border border-gray-200 text-gray-600 hover:bg-orange-600 hover:text-white transition-all shadow-sm">
+                                <ChevronRight size={20} />
+                            </button>
+                        </div>
+                    )}
+                </div>
+
+                {/* Call to Action */}
+                <div className="mt-16 text-center">
+                    <p className="text-gray-500 mb-6 font-medium">Has God done something amazing in your life?</p>
+                    <a href="/testimonies/submit" className="inline-block">
+                        <Button variant="secondary" className="!border-orange-200 text-orange-600 hover:!bg-orange-50 shadow-md py-6 px-10 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center gap-3">
+                            <PenTool size={16} /> Share Your Story
+                        </Button>
+                    </a>
                 </div>
             </div>
         </section>

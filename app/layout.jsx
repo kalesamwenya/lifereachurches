@@ -18,7 +18,7 @@ export const metadata = {
         default: 'Life Reach Church | Great Exploits',
         template: '%s | Life Reach Church',
     },
-    description: 'Welcome to Life Reach Church in Lusaka, Zambia. We exist to reach the lost, raise disciples, and release leaders. Join us for authentic community and powerful worship.',
+    description: 'We are a Christ-centered church committed to loving God, growing in faith, and impacting our world. Led by visionary Prophet Gomezyo Shamane, we exist to build a spiritual family where people are grounded in God’s Word, empowered by the Holy Spirit, and equipped to live transformed lives.',
     keywords: ['Church in Lusaka', 'Zambia Church', 'Life Reach', 'Sermons', 'Christianity', 'Worship', 'Community', 'Bible Study', 'Youth Ministry'],
     authors: [{ name: 'Life Reach Media Team' }],
     creator: 'Life Reach Church',
@@ -31,7 +31,7 @@ export const metadata = {
     // Open Graph (Facebook, LinkedIn, WhatsApp)
     openGraph: {
         title: 'Life Reach Church | Great Exploits',
-        description: 'We are a movement dedicated to showing the world that Jesus is alive. Join us for Sunday services at 9AM & 11AM.',
+        description: 'We are a Christ-centered church committed to loving God, growing in faith, and impacting our world. Led by visionary Prophet Gomezyo Shamane, we exist to build a spiritual family where people are grounded in God’s Word, empowered by the Holy Spirit, and equipped to live transformed lives.',
         url: 'https://lifereachchurch.org',
         siteName: 'Life Reach Church',
         locale: 'en_US', // or 'en_ZM'
@@ -49,7 +49,7 @@ export const metadata = {
     twitter: {
         card: 'summary_large_image',
         title: 'Life Reach Church',
-        description: 'Reaching the lost, Raising disciples, and Releasing leaders. Join the movement.',
+        description: 'We are a Christ-centered church committed to loving God, growing in faith, and impacting our world. Led by visionary Prophet Gomezyo Shamane, we exist to build a spiritual family where people are grounded in God’s Word, empowered by the Holy Spirit, and equipped to live transformed lives.',
         images: ['https://lifereachchurch.org/imgs/SHIFT2025-212.jpg'],
         creator: '@lifereachchurch',
     },

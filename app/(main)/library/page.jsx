@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { BookOpen, Star, Search, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { BookOpen, Star, Search, Loader2, ChevronLeft, ChevronRight, Phone, MessageSquare, PenTool } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const API_URL = 'https://content.lifereachchurch.org';
@@ -107,7 +107,7 @@ export default function LibraryPage() {
                                                 onClick={() => window.location.href = `/library/${book.id}`}
                                             >
                                                 <img
-                                                    src={`https://content.lifereachchurch.org/${bookData.cover_url || bookData.image}`}
+                                                    src={`https://content.lifereachchurch.org/${book.cover_url || book.image}`}
                                                     alt={book.title}
                                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                                 />
@@ -180,15 +180,7 @@ export default function LibraryPage() {
                     </>
                 )}
 
-                {/* Footer CTA */}
-                <div className="mt-24 bg-gray-900 rounded-[3rem] p-12 md:p-20 text-center text-white relative overflow-hidden shadow-2xl">
-                    <BookOpen size={300} className="absolute -bottom-20 -left-20 text-white/5" />
-                    <h3 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter mb-6 relative z-10">Visit Our Bookstore</h3>
-                    <p className="text-gray-400 max-w-2xl mx-auto mb-10 relative z-10 font-medium text-lg">
-                        Stop by the lobby before or after service to browse our full collection of books, bibles, and study guides.
-                    </p>
-                    <Button variant="primary" className="relative z-10 !px-12 py-5 shadow-2xl shadow-orange-600/40">Get Directions</Button>
-                </div>
+               
             </div>
         </div>
     );

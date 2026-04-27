@@ -137,7 +137,7 @@ function AuthForm() {
 
 
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-0 sm:p-6 sm:pt-32">
+        <div className="min-h-screen flex items-center justify-center p-0 sm:p-6 sm:pt-32">
             <div className="max-w-5xl w-full h-screen sm:h-auto bg-white rounded-none sm:rounded-[2rem] shadow-none sm:shadow-2xl overflow-hidden grid md:grid-cols-2">
                 
                 {/* Visual Side */}
@@ -318,13 +318,13 @@ function AuthForm() {
                     </form>
 
                     {/* Demo Credentials - Login only */}
-                    {mode === 'login' && (
+                    {/* {mode === 'login' && (
                         <div className="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
                             <p className="text-xs font-bold text-blue-900 mb-2">Demo Credentials:</p>
                             <p className="text-xs text-blue-700 font-mono">samuel@lifereach.org / password123</p>
                             <p className="text-xs text-blue-700 font-mono">test@test.com / test123</p>
                         </div>
-                    )}
+                    )} */}
 
                     {/* Mode Switcher */}
                     <div className="mt-8 text-center space-y-2">
@@ -336,7 +336,7 @@ function AuthForm() {
                                     setSuccess('');
                                 }}
                                 className="text-gray-500 hover:text-orange-600 font-medium transition-colors"
-                            >
+                            hidden>
                                 Don't have an account? <span className="font-bold">Sign Up</span>
                             </button>
                         )}
