@@ -6,41 +6,23 @@ import {
   Send, X, CheckCircle2, BookOpen, Clock, ArrowRight, 
   Sparkles, ShieldCheck, MapPin
 } from 'lucide-react';
-
-const FAQ_DATA = [
-  {
-    id: 1,
-    category: "General",
-    question: "What time do Sunday services start?",
-    answer: "Our main Sunday services are held at 9:00 AM and 11:30 AM. We also have a mid-week prayer meeting on Wednesday evenings at 7:00 PM."
-  },
-  {
-    id: 2,
-    category: "Families",
-    question: "Is there a program for children?",
-    answer: "Yes! We have 'Kids Kingdom' for ages 3-12 during both Sunday services. Our nursery is also available for infants and toddlers."
-  },
-  {
-    id: 3,
-    category: "Membership",
-    question: "How can I become a member of the church?",
-    answer: "We hold a 'New Members Class' every first Sunday of the month. It's a great way to learn about our vision, values, and how you can get involved."
-  },
-  {
-    id: 4,
-    category: "Giving",
-    question: "Where do my donations go?",
-    answer: "Contributions support our local ministries, community outreach programs, and international missions. We provide annual reports for full transparency."
-  },
-  {
-    id: 5,
-    category: "Community",
-    question: "Do you have small groups or Bible studies?",
-    answer: "Absolutely. We have 'Life Groups' that meet in various homes throughout the week. You can find a group near you at the information desk."
-  }
-];
+import axios from 'axios';
+import { motion } from 'framer-motion';
 
 
+const ResourceSkeleton = () => (
+  <div className="space-y-3">
+    {[1, 2, 3, 4].map((i) => (
+      <div key={i} className="flex items-center gap-3 p-3">
+        <div className="w-10 h-12 bg-gray-100 animate-pulse rounded-lg" />
+        <div className="flex-1 space-y-2">
+          <div className="h-3 w-3/4 bg-gray-100 animate-pulse rounded" />
+          <div className="h-2 w-1/2 bg-gray-50 animate-pulse rounded" />
+        </div>
+      </div>
+    ))}
+  </div>
+);
 
 export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -50,6 +32,9 @@ export default function App() {
   const [formData, setFormData] = useState({ name: '', email: '', question: '' });
   const [faqs, setFaqs] = useState([]);
   const [discussions, setDiscussions] = useState([]);
+
+  const [resources, setResources] = useState([]);
+  const [loading, setLoading] = useState(true);
 
 
 
@@ -137,6 +122,19 @@ const fetchDiscussions = async () => {
     console.error(err);
   }
 };
+
+useEffect(() => {
+    // Fetching the latest 4 growth resources
+    axios.get(`${API_BASE}/library/list.php`, {
+      params: { pageSize: 4, sort: 'created_at-desc' }
+    })
+    .then(res => {
+      setResources(res.data.rows || []);
+    })
+    .catch(err => console.error("Widget Error:", err))
+    .finally(() => setLoading(false));
+  }, []);
+
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900">
@@ -291,33 +289,87 @@ const fetchDiscussions = async () => {
             </div>
 
             {/* Resources Widget */}
-            <div className="bg-white rounded-3xl shadow-sm border border-brand-100 p-6">
-              <h3 className="font-bold text-brand-900 mb-4 flex items-center space-x-2">
-                <BookOpen size={18} className="text-brand-500" />
-                <span>Growth Resources</span>
-              </h3>
-              <div className="space-y-3">
-                {['Bible Study Guides', 'New Member Handbook', 'Prayer Journal PDF', 'Volunteering 101'].map((res, i) => (
-                  <a key={i} href="#" className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 group transition-colors">
-                    <span className="text-slate-600 text-sm font-medium">{res}</span>
-                    <ArrowRight size={14} className="text-slate-300 group-hover:text-indigo-500" />
-                  </a>
-                ))}
+            <div className="bg-white rounded-[2rem] shadow-sm border border-gray-100 p-6">
+      <h3 className="font-black text-gray-900 mb-6 flex items-center space-x-2 uppercase italic tracking-tighter text-lg">
+        <BookOpen size={20} className="text-orange-600" />
+        <span>Growth Resources</span>
+      </h3>
+
+      {loading ? (
+        <ResourceSkeleton />
+      ) : (
+        <div className="space-y-3">
+          {resources.map((book) => (
+            <motion.a
+              key={book.id}
+              href={`/library/${book.id}`}
+              whileHover={{ x: 5 }}
+              className="flex items-start gap-4 p-3 rounded-2xl hover:bg-orange-50/50 group transition-all border border-transparent hover:border-orange-100"
+            >
+              {/* Cover Thumbnail */}
+              <div className="w-12 h-16 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden shadow-sm border border-white">
+                <img 
+                  src={`${API_BASE}/${book.cover_url || book.image}`} 
+                  alt="" 
+                  className="w-full h-full object-cover"
+                />
               </div>
-            </div>
+
+              {/* Text Info */}
+              <div className="flex-1 min-w-0">
+                <h4 className="text-gray-900 text-sm font-black uppercase tracking-tight line-clamp-1 group-hover:text-orange-600 transition-colors">
+                  {book.title}
+                </h4>
+                <p className="text-gray-400 text-[10px] leading-tight line-clamp-2 mt-1 font-medium">
+                  {book.description || 'Access this ministry resource online.'}
+                </p>
+              </div>
+
+              <div className="self-center">
+                <ArrowRight size={14} className="text-gray-300 group-hover:text-orange-600 transition-colors" />
+              </div>
+            </motion.a>
+          ))}
+
+          {resources.length === 0 && !loading && (
+            <p className="text-xs text-gray-400 text-center py-4">No resources available yet.</p>
+          )}
+        </div>
+      )}
+
+      <button 
+        onClick={() => window.location.href = '/library'}
+        className="w-full mt-6 py-3 border-t border-gray-50 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-orange-600 transition-colors"
+      >
+        View Full Library
+      </button>
+    </div>
 
             {/* Visit Card */}
             <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-6">
-              <div className="w-full h-32 bg-slate-200 rounded-2xl mb-4 overflow-hidden relative">
-                 <div className="absolute inset-0 bg-indigo-900/10 flex items-center justify-center italic text-slate-400 text-xs">Map Placeholder</div>
-                 <MapPin className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-brand-500" size={32} />
-              </div>
-              <h4 className="font-bold text-slate-900">Visit Us in Person</h4>
-              <p className="text-sm text-slate-500 mb-4">123 Grace Way, Springfield</p>
-              <button className="w-full py-2.5 text-brand-600 border border-indigo-100 rounded-xl font-bold hover:bg-indigo-50 transition-colors text-sm">
-                Get Directions
-              </button>
-            </div>
+  <div className="w-full h-32 bg-slate-200 rounded-2xl mb-4 overflow-hidden relative">
+    {/* Map Background Pattern or Image */}
+    <div className="absolute inset-0 bg-[url('https://www.google.com/maps/vt/pb=!1m4!1m3!1i13!2i4955!3i3126!2m3!1e0!2sm!3i607147311!3m8!2sen!3sus!5e1105!12m4!1e68!2m2!1sset!2sRoadmap!4e0!5m1!5f2')] bg-cover opacity-30 grayscale" />
+    <div className="absolute inset-0 bg-orange-900/5 flex items-center justify-center italic text-slate-400 text-xs"></div>
+    <MapPin className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-orange-600 animate-bounce" size={32} />
+  </div>
+  
+  <h4 className="font-black uppercase italic tracking-tighter text-slate-900">Visit Us in Person</h4>
+  <p className="text-sm text-slate-500 mb-4 font-medium">Lusaka, Zambia</p>
+  
+  <a 
+    href="https://share.google/hF32KpsevD3W66E4R" 
+    target="_blank" 
+    rel="noopener noreferrer"
+    className="block w-full"
+  >
+    <button className="w-full py-2.5 text-orange-600 border border-orange-100 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-orange-50 transition-colors">
+      Get Directions
+    </button>
+  </a>
+</div>
+
+
           </div>
         </div>
       </div>
