@@ -107,7 +107,7 @@ export default function LibraryPage() {
                                                 onClick={() => window.location.href = `/library/${book.id}`}
                                             >
                                                 <img
-                                                    src={book.cover_image || book.image}
+                                                    src={`https://content.lifereachchurch.org/${bookData.cover_url || bookData.image}`}
                                                     alt={book.title}
                                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                                 />

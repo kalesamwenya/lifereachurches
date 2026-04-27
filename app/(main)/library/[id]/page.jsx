@@ -11,9 +11,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const API_URL = 'https://content.lifereachchurch.org';
 
-// --- Internal Components (Design Strictly Preserved) ---
+// --- Internal Components ---
 
-const Button = ({ children, variant = 'primary', className = '', onClick, disabled }) => {
+const Button = ({ children, variant = 'primary', className = '', onClick, disabled, type = "button" }) => {
     const base = "px-6 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed";
     const styles = {
         primary: "bg-orange-600 text-white hover:bg-orange-700 shadow-lg shadow-orange-600/20",
@@ -21,27 +21,59 @@ const Button = ({ children, variant = 'primary', className = '', onClick, disabl
         outline: "bg-transparent border-2 border-white text-white hover:bg-white hover:text-gray-900"
     };
     return (
-        <button onClick={onClick} disabled={disabled} className={`${base} ${styles[variant]} ${className}`}>
+        <button type={type} onClick={onClick} disabled={disabled} className={`${base} ${styles[variant]} ${className}`}>
             {children}
         </button>
     );
 };
 
-// --- Payment Modal Component (Design Strictly Preserved) ---
+// --- Updated Payment Modal Component ---
 const PaymentModal = ({ isOpen, onClose, item, onSuccess }) => {
     const [step, setStep] = useState('details');
     const [method, setMethod] = useState(null);
     const [formData, setFormData] = useState({ name: '', email: '' });
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleDetailsSubmit = (e) => { e.preventDefault(); setStep('method'); };
+    const isFree = !item.price || parseFloat(item.price) === 0;
+
+    const handleFinalizeAccess = async () => {
+        setIsSubmitting(true);
+        setStep('processing');
+        try {
+            // Call the purchase API to record access
+            const response = await axios.post(`${API_URL}/library/purchase_book.php`, {
+                book_id: item.id,
+                email: formData.email,
+                name: formData.name
+            });
+
+            if (response.data.success) {
+                setStep('success');
+                // Pass the email back so the parent knows who is downloading
+                if (onSuccess) onSuccess(formData.email);
+            }
+        } catch (err) {
+            alert(err.response?.data?.message || "An error occurred. Please try again.");
+            setStep('details');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleDetailsSubmit = (e) => { 
+        e.preventDefault(); 
+        if (isFree) {
+            handleFinalizeAccess();
+        } else {
+            setStep('method'); 
+        }
+    };
 
     const handlePay = (e) => {
         e.preventDefault();
-        setStep('processing');
-        setTimeout(() => {
-            setStep('success');
-            if (onSuccess) onSuccess();
-        }, 2500);
+        // Here you would normally trigger Flutterwave/Kazang
+        // For now, we simulate success and call our backend
+        handleFinalizeAccess();
     };
 
     const reset = () => {
@@ -59,7 +91,7 @@ const PaymentModal = ({ isOpen, onClose, item, onSuccess }) => {
                 <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} className="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden relative">
                     <div className="bg-gray-50 p-6 border-b border-gray-100 flex justify-between items-center">
                         <div>
-                            <h3 className="text-lg font-bold text-gray-900">Checkout</h3>
+                            <h3 className="text-lg font-bold text-gray-900">{isFree ? 'Claim Free Book' : 'Checkout'}</h3>
                             <p className="text-sm text-gray-500">{item.title}</p>
                         </div>
                         <button onClick={reset} className="p-2 hover:bg-gray-200 rounded-full transition-colors"><X size={20} className="text-gray-500" /></button>
@@ -71,11 +103,13 @@ const PaymentModal = ({ isOpen, onClose, item, onSuccess }) => {
                                 <div className="text-center mb-6">
                                     <div className="w-16 h-16 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4"><User size={32} /></div>
                                     <h3 className="text-xl font-bold text-gray-900">Your Info</h3>
-                                    <p className="text-gray-500 text-sm">Where should we send your receipt?</p>
+                                    <p className="text-gray-500 text-sm">Where should we send your {isFree ? 'download link' : 'receipt'}?</p>
                                 </div>
                                 <input type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="Jane Doe" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none" />
                                 <input type="email" required value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="jane@example.com" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none" />
-                                <Button className="w-full mt-4">Continue to Payment <ArrowRight size={18} /></Button>
+                                <Button type="submit" className="w-full mt-4">
+                                    {isFree ? 'Get Book Now' : 'Continue to Payment'} <ArrowRight size={18} />
+                                </Button>
                             </form>
                         )}
 
@@ -96,21 +130,21 @@ const PaymentModal = ({ isOpen, onClose, item, onSuccess }) => {
                             <form onSubmit={handlePay} className="space-y-5">
                                 <div className="text-sm font-black text-gray-900 mb-4">ZMW {parseFloat(item.price).toFixed(2)}</div>
                                 <input type="tel" required placeholder={method === 'mobile_money' ? "97 123 4567" : "Card Number"} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none" />
-                                <Button className={`w-full ${method === 'mobile_money' ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-blue-600 hover:bg-blue-700'}`}>Pay Now</Button>
+                                <Button type="submit" className={`w-full ${method === 'mobile_money' ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-blue-600 hover:bg-blue-700'}`}>Pay Now</Button>
                             </form>
                         )}
 
                         {step === 'processing' && (
                             <div className="text-center py-10">
                                 <Loader2 className="animate-spin mx-auto mb-4 text-orange-500" size={40} />
-                                <h3 className="font-bold text-gray-900">Processing...</h3>
+                                <h3 className="font-bold text-gray-900">{isFree ? 'Preparing your download...' : 'Processing...'}</h3>
                             </div>
                         )}
 
                         {step === 'success' && (
                             <div className="text-center py-6">
                                 <CheckCircle size={60} className="text-green-500 mx-auto mb-4" />
-                                <h3 className="text-2xl font-black">Success!</h3>
+                                <h3 className="text-2xl font-black">{isFree ? 'Ready to Read!' : 'Success!'}</h3>
                                 <Button onClick={reset} className="w-full mt-6 bg-gray-900">Access My Book</Button>
                             </div>
                         )}
@@ -129,6 +163,7 @@ export default function BookDetailPage() {
     const [bookData, setBookData] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [hasPurchased, setHasPurchased] = useState(false);
+    const [userEmail, setUserEmail] = useState(''); // Store email for download
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -158,9 +193,16 @@ export default function BookDetailPage() {
         </div>
     );
 
+    const isFree = !bookData.price || parseFloat(bookData.price) === 0;
+
+    const handleDownload = () => {
+        if (!userEmail) return;
+        // Direct link to the PHP download script with security params
+        window.location.href = `${API_URL}/library/download_book.php?id=${id}&email=${encodeURIComponent(userEmail)}`;
+    };
+
     return (
         <div className="min-h-screen bg-white pt-32 pb-24">
-            {/* Back Navigation */}
             <div className="container mx-auto px-6 mb-8">
                 <button onClick={() => router.push('/library')} className="inline-flex items-center gap-2 text-gray-500 hover:text-orange-600 font-bold transition-colors">
                     <ArrowLeft size={20} /> Back to Library
@@ -169,16 +211,12 @@ export default function BookDetailPage() {
 
             <div className="container mx-auto px-6">
                 <div className="grid lg:grid-cols-2 gap-12 lg:gap-24">
-
-                    {/* Left Column: Image */}
+                    {/* Left Column */}
                     <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="relative">
                         <div className="aspect-[3/4] rounded-3xl overflow-hidden shadow-2xl bg-gray-100 relative group">
-                            {/* Uses cover_image from DB or image fallback */}
-                            <img src={bookData.cover_image || bookData.image} alt={bookData.title} className="w-full h-full object-cover" />
+                            <img src={`https://content.lifereachchurch.org/${bookData.cover_url || bookData.image}`} alt={bookData.title} className="w-full h-full object-cover" />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"></div>
                         </div>
-
-                        {/* Quick Stats Overlay */}
                         <div className="absolute -bottom-6 -right-6 bg-white p-6 rounded-2xl shadow-xl border border-gray-100 hidden md:block">
                             <div className="flex gap-8 text-center">
                                 <div>
@@ -195,7 +233,7 @@ export default function BookDetailPage() {
                         </div>
                     </motion.div>
 
-                    {/* Right Column: Details */}
+                    {/* Right Column */}
                     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col justify-center">
                         <span className="inline-block px-3 py-1 bg-orange-100 text-orange-700 text-xs font-bold uppercase tracking-wider rounded-full w-fit mb-6">
                             {bookData.category}
@@ -205,7 +243,9 @@ export default function BookDetailPage() {
                         <p className="text-xl text-gray-500 font-medium mb-8">By {bookData.author}</p>
 
                         <div className="flex items-end gap-4 mb-8 pb-8 border-b border-gray-100">
-                            <h2 className="text-4xl font-black text-orange-600">ZMW {parseFloat(bookData.price).toFixed(2)}</h2>
+                            <h2 className="text-4xl font-black text-orange-600">
+                                {isFree ? "FREE" : `ZMW ${parseFloat(bookData.price).toFixed(2)}`}
+                            </h2>
                         </div>
 
                         <div className="mb-10">
@@ -215,19 +255,39 @@ export default function BookDetailPage() {
 
                         {hasPurchased ? (
                             <div className="bg-green-50 border border-green-100 rounded-2xl p-6 mb-8">
-                                <div className="flex items-center gap-3 text-green-700 font-bold mb-4"><CheckCircle size={24} /> You own this book</div>
-                                <div className="flex gap-4">
-                                    <Button className="flex-1 bg-green-600 hover:bg-green-700 text-white"><Download size={20} /> Download PDF</Button>
-                                    <Button variant="secondary" className="flex-1"><BookOpen size={20} /> Read Online</Button>
-                                </div>
-                            </div>
+            <div className="flex items-center gap-3 text-green-700 font-bold mb-4">
+                <CheckCircle size={24} /> {isFree ? 'Book Added to your Library' : 'You own this book'}
+            </div>
+            <div className="flex gap-4">
+                <Button 
+                    onClick={handleDownload} 
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                >
+                    <Download size={20} /> Download PDF
+                </Button>
+                {/* Optional: link to a web viewer */}
+                <Button variant="secondary" className="flex-1">
+                    <BookOpen size={20} /> Read Online
+                </Button>
+            </div>
+        </div>
                         ) : (
                             <div className="space-y-4">
                                 <div className="flex gap-4">
-                                    <Button onClick={() => setIsModalOpen(true)} className="flex-1 py-4 text-lg"><ShoppingBag size={20} /> Buy Now</Button>
+                                    <Button 
+            onClick={() => setIsModalOpen(true)} 
+            className="flex-1 py-4 text-lg"
+        >
+            {isFree ? <Download size={20} /> : <ShoppingBag size={20} />}
+            {isFree ? 'Get for Free' : 'Buy Now'}
+        </Button>
                                     <Button variant="secondary" className="flex-1 py-4 text-lg">Free Sample</Button>
                                 </div>
-                                <p className="text-xs text-center text-gray-400 flex items-center justify-center gap-2"><Lock size={12} /> Secure Payment via Mobile Money or Visa</p>
+                                {!isFree && (
+                                    <p className="text-xs text-center text-gray-400 flex items-center justify-center gap-2">
+                                        <Lock size={12} /> Secure Payment via Mobile Money or Visa
+                                    </p>
+                                )}
                             </div>
                         )}
                     </motion.div>
@@ -237,9 +297,12 @@ export default function BookDetailPage() {
             {bookData && (
                 <PaymentModal
                     isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
-                    item={bookData}
-                    onSuccess={() => { setHasPurchased(true); setIsModalOpen(false); }}
+            onClose={() => setIsModalOpen(false)}
+            item={bookData}
+            onSuccess={(email) => { 
+                setUserEmail(email);
+                setHasPurchased(true); 
+            }}
                 />
             )}
         </div>

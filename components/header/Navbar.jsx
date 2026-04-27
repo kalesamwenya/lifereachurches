@@ -41,7 +41,7 @@ export default function Navbar() {
         router.push('/auth');
     };
 
-    const transparentPages = ['/', '/about', '/events', '/podcast', '/live', '/education', '/gallery'];
+    const transparentPages = ['/', '/about', '/events', '/podcast', '/live', '/education', '/gallery','/billboard', '/get-to-know'];
     const isTransparentPage = transparentPages.includes(pathname);
 
     // Update: Navbar becomes solid if scrolled, OR not a transparent page, OR if the menu is open
@@ -85,7 +85,9 @@ export default function Navbar() {
 
                 <div className="hidden lg:flex items-center gap-6">
                     <a href="/" className={`font-semibold text-sm uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/' ? 'text-orange-500' : (isSolid ? 'text-gray-600' : 'text-gray-200')}`}>Home</a>
+                    <a href="/billboard" className={`font-semibold text-sm uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/' ? 'text-orange-500' : (isSolid ? 'text-gray-600' : 'text-gray-200')}`}>Billboard</a>
                     <a href="/about" className={`font-semibold text-sm uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/about' ? 'text-orange-500' : (isSolid ? 'text-gray-600' : 'text-gray-200')}`}>About</a>
+                    <a href="/get-to-know" className={`font-semibold text-sm uppercase tracking-wide transition-colors hover:text-orange-500 ${pathname === '/' ? 'text-orange-500' : (isSolid ? 'text-gray-600' : 'text-gray-200')}`}>Ask</a>
 
                     <div className="relative group" onMouseEnter={() => setMediaDropdown(true)} onMouseLeave={() => setMediaDropdown(false)}>
                         <button className={`font-semibold text-sm uppercase tracking-wide transition-colors flex items-center gap-1 hover:text-orange-500 ${media.some(m => pathname.includes(m.path)) ? 'text-orange-500' : (isSolid ? 'text-gray-600' : 'text-gray-200')}`}>
