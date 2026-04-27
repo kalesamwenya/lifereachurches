@@ -88,7 +88,7 @@ export default function Chatbot() {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end font-sans">
+    <div className="fixed bottom-6 right-6 z-[9999] flex flex-col items-end font-sans">
 
       {/* Trigger Button (UNCHANGED) */}
       {!open && (

@@ -90,7 +90,7 @@ export default function LibraryPage() {
                     </div>
                 ) : (
                     <>
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
+                        <div className="grid max-sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-10">
                             <AnimatePresence mode="popLayout">
                                 {books.map((book, index) => (
                                     <motion.div
@@ -182,6 +182,28 @@ export default function LibraryPage() {
 
                
             </div>
+
+            {/* --- NEW SALES CALL TO ACTION --- */}
+                <div className="mt-20 text-center bg-white p-10 rounded-[3rem] shadow-xl border border-gray-100 max-w-4xl mx-auto">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">Ready to work with us?</h3>
+                    <p className="text-gray-500 mb-8">Our sales team is available to discuss your next project or event.</p>
+                    
+                    <div className="flex flex-col md:flex-row justify-center items-center gap-4">
+                        {/* Primary Phone CTA */}
+                        <a href="tel:+260972933416" className="w-full md:w-auto">
+                            <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white shadow-lg py-7 px-10 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3">
+                                <Phone size={18} /> Call Sales Team
+                            </Button>
+                        </a>
+                        
+                        {/* Secondary Inquiry CTA */}
+                        <a href="https://wa.me/260972933416" className="w-full md:w-auto">
+                            <Button variant="outline" className="w-full border-2 border-gray-200 text-gray-700 hover:bg-gray-50 py-7 px-10 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3">
+                                <MessageSquare size={18} /> WhatsApp Inquiry
+                            </Button>
+                        </a>
+                    </div>
+                </div>
         </div>
     );
 }
