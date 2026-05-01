@@ -135,19 +135,86 @@ const closePost = () => {
     } catch (err) { console.error(err); }
   };
 
+  const categories = React.useMemo(() => {
+  const types = billboardUpdates.map(post => (post.type || 'announcement').toLowerCase());
+  const unique = Array.from(new Set(types));
+
+  return ['all', ...unique];
+}, [billboardUpdates]);
+
   // --- 3. Pagination ---
   const filteredPosts = billboardUpdates.filter(item => activeTab === 'all' || item.category === activeTab);
   const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
   const currentPosts = filteredPosts.slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage);
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-brand-600 border-slate-200"></div>
-    </div>
-  );
+  const SkeletonCard = () => (
+  <div className="animate-pulse space-y-6">
+    {/* Image */}
+    <div className="h-96 w-full bg-slate-200 rounded-3xl" />
 
+    {/* Content */}
+    <div className="max-w-3xl space-y-4">
+      <div className="h-4 w-32 bg-slate-200 rounded-lg" />
+      <div className="h-10 w-3/4 bg-slate-300 rounded-lg" />
+      <div className="h-4 w-full bg-slate-200 rounded-lg" />
+      <div className="h-4 w-5/6 bg-slate-200 rounded-lg" />
+      <div className="h-6 w-40 bg-slate-300 rounded-lg" />
+    </div>
+  </div>
+);
+
+const SkeletonSidebar = () => (
+  <div className="animate-pulse space-y-12">
+    {/* Blog Feed */}
+    <div className="p-8 border border-slate-100 rounded-[40px] space-y-6">
+      <div className="h-6 w-40 bg-slate-300 rounded" />
+      {[1,2,3].map(i => (
+        <div key={i} className="space-y-2">
+          <div className="h-4 w-full bg-slate-200 rounded" />
+          <div className="h-3 w-1/2 bg-slate-100 rounded" />
+        </div>
+      ))}
+    </div>
+
+    {/* Events */}
+    <div className="p-8 bg-slate-900 rounded-[40px] space-y-6">
+      <div className="h-6 w-40 bg-slate-700 rounded" />
+      {[1,2].map(i => (
+        <div key={i} className="flex gap-4">
+          <div className="w-10 h-10 bg-slate-700 rounded-xl" />
+          <div className="flex-1 space-y-2">
+            <div className="h-4 w-3/4 bg-slate-700 rounded" />
+            <div className="h-3 w-1/2 bg-slate-800 rounded" />
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+ if (loading) {
   return (
     <div className="w-full bg-white text-slate-900 font-sans">
+      <main className="max-w-7xl mx-auto px-4 py-16">
+        <div className="flex flex-col lg:flex-row gap-16">
+          
+          <div className="flex-1 space-y-12">
+            <SkeletonCard />
+            <SkeletonCard />
+          </div>
+
+          <aside className="w-full lg:w-[400px]">
+            <SkeletonSidebar />
+          </aside>
+
+        </div>
+      </main>
+    </div>
+  );
+}
+
+  return (
+    <div className={`w-full bg-white text-slate-900 font-sans transition-opacity duration-500 ${loading ? 'opacity-0' : 'opacity-100'}`}>
       {selectedPost ? (
         /* --- READING PAGE --- */
         <article className="animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -240,9 +307,29 @@ const closePost = () => {
             <div className="flex flex-col lg:flex-row gap-16">
               <div className="flex-1 space-y-12">
                 <div className="flex items-center gap-2 border-b border-slate-100 pb-6">
-                  {['all', 'news', 'updates', 'events'].map((tab) => (
-                    <button key={tab} onClick={() => { setActiveTab(tab); setCurrentPage(1); }} className={`px-5 py-2 text-sm font-bold rounded-xl capitalize transition-all ${activeTab === tab ? 'bg-brand-600 text-white shadow-lg shadow-brand-200' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}>{tab}</button>
-                  ))}
+                  {loading ? (
+  <div className="flex gap-2 border-b border-slate-100 pb-6 animate-pulse">
+    {[1,2,3,4].map(i => (
+      <div key={i} className="h-10 w-20 bg-slate-200 rounded-xl" />
+    ))}
+  </div>
+) : (
+  <div className="flex items-center gap-2 border-b border-slate-100 pb-6">
+    {categories.map((tab) => (
+      <button
+        key={tab}
+        onClick={() => { setActiveTab(tab); setCurrentPage(1); }}
+        className={`px-5 py-2 text-sm font-bold rounded-xl capitalize transition-all ${
+          activeTab === tab
+            ? 'bg-brand-600 text-white shadow-lg shadow-brand-200'
+            : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
+        }`}
+      >
+        {tab}
+      </button>
+    ))}
+  </div>
+)}
                 </div>
 
                 <div className="grid gap-12">

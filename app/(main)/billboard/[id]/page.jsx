@@ -10,21 +10,51 @@ import { useRouter, useSearchParams } from 'next/navigation';
 const API_BASE_URL = 'https://content.lifereachchurch.org/';
 
 // --- Skeletons (Keeping your existing ones) ---
-const SkeletonCard = () => (
-  <div className="animate-pulse space-y-6">
-    <div className="h-80 w-full bg-slate-200 rounded-3xl" />
-    <div className="space-y-3">
-      <div className="h-8 w-3/4 bg-slate-200 rounded-lg" />
-      <div className="h-4 w-full bg-slate-100 rounded-lg" />
-    </div>
-  </div>
-);
+const PostReaderSkeleton = () => (
+  <article className="animate-pulse bg-white">
+    
+    {/* Hero */}
+    <div className="relative h-[50vh] w-full bg-slate-200" />
 
-const SkeletonSidebar = () => (
-  <div className="animate-pulse space-y-12">
-    <div className="h-64 bg-slate-50 rounded-[40px]" />
-    <div className="h-64 bg-slate-100 rounded-[40px]" />
-  </div>
+    <main className="max-w-7xl mx-auto px-4 py-16">
+      <div className="flex flex-col lg:flex-row gap-16">
+        
+        {/* Left Content */}
+        <div className="flex-1 space-y-8">
+          
+          {/* Author Row */}
+          <div className="flex items-center justify-between pb-8 border-b border-slate-100">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-slate-200 rounded-full" />
+              <div className="space-y-2">
+                <div className="h-4 w-32 bg-slate-200 rounded" />
+                <div className="h-3 w-20 bg-slate-100 rounded" />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <div className="w-10 h-10 bg-slate-200 rounded-full" />
+              <div className="w-10 h-10 bg-slate-200 rounded-full" />
+            </div>
+          </div>
+
+          {/* Paragraphs */}
+          <div className="space-y-4">
+            {[1,2,3,4].map(i => (
+              <div key={i} className="h-4 w-full bg-slate-200 rounded" />
+            ))}
+            <div className="h-4 w-3/4 bg-slate-200 rounded" />
+          </div>
+        </div>
+
+        {/* Sidebar */}
+        <aside className="w-full lg:w-[400px] space-y-12">
+          <div className="h-64 bg-slate-200 rounded-[40px]" />
+          <div className="h-64 bg-slate-100 rounded-[40px]" />
+        </aside>
+
+      </div>
+    </main>
+  </article>
 );
 
 // --- Sub-Component: Reading View ---
@@ -177,10 +207,6 @@ function BillboardContent() {
   const loadContent = useCallback(async () => {
   setLoading(true);
 
-  useEffect(() => {
-  loadContent();
-}, [loadContent]);
-
   try {
     const res = await fetch(`${API_BASE_URL}/billboard/get_posts.php`);
     const result = await res.json();
@@ -227,6 +253,10 @@ function BillboardContent() {
   }
 }, [postId]);
 
+useEffect(() => {
+  loadContent();
+}, [loadContent]);
+
 
 useEffect(() => {
   if (typeof window !== "undefined") {
@@ -247,24 +277,28 @@ useEffect(() => {
 
   return (
     // THE KEY PROP FORCES REFRESH ON ID CHANGE
-    <div key={postId || 'root'} className="w-full bg-white text-slate-900 font-sans">
-      {selectedPost ? (
+    <div key={postId || 'root'} className={`w-full bg-white text-slate-900 font-sans transition-opacity duration-500 ${loading ? 'opacity-0' : 'opacity-100'}`}>
+      {postId && loading ? (
+  <PostReaderSkeleton />
+) : selectedPost ? (
         <PostReader 
           post={selectedPost} 
           onBack={() => router.push('/billboard')}
           relatedPosts={relatedPosts}
           onOpenRelated={(id) => router.push(`/billboard?post=${id}`)}
-          onShare={async (p) => {
-           if (navigator.share) {
-  await navigator.share({
-    title: p.title,
-    text: p.description,
-    url
-  });
-} else {
-  await navigator.clipboard.writeText(url);
-}
-          }}
+  onShare={async (p) => {
+  const url = getShareUrl(p.id);
+
+  if (navigator.share) {
+    await navigator.share({
+      title: p.title,
+      text: p.description,
+      url
+    });
+  } else {
+    await navigator.clipboard.writeText(url);
+  }
+}}
           onToggleBookmark={toggleBookmark}
           isBookmarked={(id) => bookmarks.some(p => p.id === id)}
           sidebarData={sidebarData}
