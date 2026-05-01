@@ -42,7 +42,7 @@ export default function BlogPage() {
         setIsLoading(true);
         try {
             // Passing sortKey to match your PHP logic
-            const res = await axios.get(`${API_URL}?sortKey=publishedAt&sortDir=DESC`);
+            const res = await axios.get(`${API_URL}/blog/list.php?sortKey=publishedAt&sortDir=DESC`);
             setPosts(res.data.rows || []);
         } catch (err) {
             console.error("Error fetching posts:", err);

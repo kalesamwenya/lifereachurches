@@ -8,7 +8,7 @@ import {
     Loader2, AlertCircle, ChevronDown, Square, Search, Filter
 } from 'lucide-react';
 import PodcastComments from '@/components/PodcastComments';
-
+import { useSearchParams } from "next/navigation";
 // --- Utility: Time Formatter ---
 const formatTime = (seconds) => {
     if (!seconds || isNaN(seconds)) return "00:00";
@@ -54,6 +54,11 @@ export default function PodcastPage() {
     const [showComments, setShowComments] = useState(true);
 
     const audioRef = useRef(null);
+
+    const searchParams = useSearchParams();
+const epId = searchParams.get("ep");
+
+
 
     // --- 1. Fetch Podcasts from RSS Feed ---
     useEffect(() => {
@@ -131,6 +136,16 @@ export default function PodcastPage() {
         fetchPodcasts();
     }, []);
 
+   useEffect(() => {
+    if (!epId || episodes.length === 0) return;
+
+    const found = episodes.find(ep => String(ep.id) === String(epId));
+
+    if (found && currentEp?.id !== found.id) {
+        playEpisode(found);
+    }
+}, [epId, episodes]);
+
     // --- Filter Logic ---
     const filteredEpisodes = episodes
         .filter(ep =>
@@ -143,16 +158,16 @@ export default function PodcastPage() {
         });
 
     // --- Audio Control Logic ---
-    const togglePlay = (e) => {
-        e?.stopPropagation();
-        if (!audioRef.current || !currentEp?.url) return;
-        if (isPlaying) {
-            audioRef.current.pause();
-        } else {
-            audioRef.current.play().catch(e => console.error("Playback error:", e));
-        }
-        setIsPlaying(!isPlaying);
-    };
+ const togglePlay = (e) => {
+    e?.stopPropagation();
+    if (!audioRef.current || !currentEp?.url) return;
+
+    if (audioRef.current.paused) {
+        audioRef.current.play().catch(console.error);
+    } else {
+        audioRef.current.pause();
+    }
+};
 
     const stop = (e) => {
         e?.stopPropagation();
@@ -171,28 +186,59 @@ export default function PodcastPage() {
         }
     };
 
-    const playEpisode = (ep) => {
-        if (!ep.url) return;
-        setCurrentEp(ep);
-        setIsPlaying(true);
-        setProgress(0);
-        setShowComments(true); // Show comments when episode changes
-        if (window.innerWidth < 1024) setIsFullPlayer(true);
+   const playEpisode = (ep) => {
+    if (!ep?.url) return;
 
-        setTimeout(() => {
-            if(audioRef.current) {
-                audioRef.current.load();
-                audioRef.current.play().catch(e => console.error("Playback error:", e));
-            }
-        }, 50);
-    };
-
-    const skip = (seconds, e) => {
-        e?.stopPropagation();
-        if (audioRef.current) {
-            audioRef.current.currentTime += seconds;
+    // If same episode is clicked, just toggle play
+    if (currentEp?.id === ep.id && audioRef.current) {
+        if (audioRef.current.paused) {
+            audioRef.current.play().catch(console.error);
+        } else {
+            audioRef.current.pause();
         }
-    };
+        return;
+    }
+
+    // Stop previous audio cleanly
+    if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+    }
+
+    setCurrentEp(ep);
+    setProgress(0);
+    setDuration(0);
+    setShowComments(true);
+
+    if (window.innerWidth < 1024) {
+        setIsFullPlayer(true);
+    }
+
+    requestAnimationFrame(() => {
+        if (!audioRef.current) return;
+
+        audioRef.current.load();
+
+        audioRef.current
+            .play()
+            .then(() => {
+                setIsPlaying(true);
+            })
+            .catch((err) => {
+                console.error("Autoplay blocked or failed:", err);
+                setIsPlaying(false);
+            });
+    });
+};
+    const skip = (seconds, e) => {
+    e?.stopPropagation();
+    if (!audioRef.current) return;
+
+    audioRef.current.currentTime = Math.max(
+        0,
+        audioRef.current.currentTime + seconds
+    );
+};
 
     const handleProgressChange = (e) => {
         e?.stopPropagation();
@@ -278,12 +324,22 @@ export default function PodcastPage() {
 
                             {/* Audio Element */}
                             {currentEp?.url && (
-                                <audio
-                                    ref={audioRef}
-                                    src={currentEp.url}
-                                    onTimeUpdate={onTimeUpdate}
-                                    onEnded={() => setIsPlaying(false)}
-                                />
+                               <audio
+    ref={audioRef}
+    src={currentEp?.url}
+    onTimeUpdate={onTimeUpdate}
+    onLoadedMetadata={() => {
+        if (audioRef.current) {
+            setDuration(audioRef.current.duration || 0);
+        }
+    }}
+    onPlay={() => setIsPlaying(true)}
+    onPause={() => setIsPlaying(false)}
+    onEnded={() => {
+        setIsPlaying(false);
+        setProgress(0);
+    }}
+/>
                             )}
 
                             <div className={`
