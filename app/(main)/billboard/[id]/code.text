@@ -1,0 +1,214 @@
+"use client";
+import React, { useState, useEffect, useCallback } from 'react';
+import { 
+  Bell, Calendar, Mic, BookOpen, Clock, ChevronRight, 
+  PlayCircle, ArrowRight, ChevronLeft, Send
+} from 'lucide-react';
+import Link from 'next/link';
+import PodcastSidebar from '@/components/PodcastSidebar';
+import axios from 'axios';
+import EventsSidebar from '@/components/EventsSidebar';
+import RecentBlogs from '@/components/RecentBlogs';
+
+const API_BASE_URL = 'https://content.lifereachchurch.org/';
+
+export default function BillboardPage() {
+  const [activeTab, setActiveTab] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [billboardUpdates, setBillboardUpdates] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [recentBlogs, setRecentBlogs] = useState([]);
+  const [isBlogsLoading, setIsBlogsLoading] = useState(false);
+
+  const postsPerPage = 2;
+
+  const fetchRecentBlogs = useCallback(async () => {
+    setIsBlogsLoading(true);
+    try {
+      const res = await axios.get(`https://content.lifereachchurch.org/blog/list.php?sortKey=publishedAt&sortDir=DESC`);
+      setRecentBlogs(res.data.rows?.slice(0, 3) || []);
+    } catch (err) {
+      console.error("Error fetching blogs:", err);
+    } finally {
+      setIsBlogsLoading(false);
+    }
+  }, []);
+
+  const fetchPosts = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_BASE_URL}/billboard/get_posts.php`);
+      const result = await res.json();
+      if (!result.success) throw new Error("API returned error");
+
+      const formatted = result.data.map(post => ({
+        id: post.id,
+        title: post.title,
+        description: post.description || '',
+        type: post.type || 'announcement',
+        category: (post.type || 'announcement').toLowerCase(),
+        date: post.date || new Date(post.created_at).toLocaleDateString(),
+        image: post.image_url || 'https://images.unsplash.com/photo-1504052434569-70ad5836ab65?auto=format&fit=crop&q=80&w=1000'
+      }));
+      setBillboardUpdates(formatted);
+    } catch (err) {
+      console.error("Failed to load posts.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchPosts();
+    fetchRecentBlogs();
+  }, [fetchPosts, fetchRecentBlogs]);
+
+  const categories = React.useMemo(() => {
+    const types = billboardUpdates.map(post => (post.type || 'announcement').toLowerCase());
+    return ['all', ...Array.from(new Set(types))];
+  }, [billboardUpdates]);
+
+  const filteredPosts = billboardUpdates.filter(item => activeTab === 'all' || item.category === activeTab);
+  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+  const currentPosts = filteredPosts.slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage);
+
+  // Skeletons for loading states
+  const SkeletonCard = () => (
+    <div className="animate-pulse space-y-6">
+      <div className="h-96 w-full bg-slate-200 rounded-3xl" />
+      <div className="max-w-3xl space-y-4">
+        <div className="h-4 w-32 bg-slate-200 rounded-lg" />
+        <div className="h-10 w-3/4 bg-slate-300 rounded-lg" />
+        <div className="h-4 w-full bg-slate-200 rounded-lg" />
+        <div className="h-6 w-40 bg-slate-300 rounded-lg" />
+      </div>
+    </div>
+  );
+
+  if (loading) {
+    return (
+      <div className="w-full bg-white text-slate-900 font-sans">
+        <main className="max-w-7xl mx-auto px-4 py-16">
+          <div className="flex flex-col lg:flex-row gap-16">
+            <div className="flex-1 space-y-12">
+              <SkeletonCard />
+              <SkeletonCard />
+            </div>
+            <aside className="w-full lg:w-[400px] bg-slate-50 h-screen rounded-[40px] animate-pulse" />
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full bg-white text-slate-900 font-sans">
+      <section className="relative h-[60vh] flex items-center justify-center overflow-hidden bg-slate-900">
+        <img src="https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&q=80&w=1600" className="absolute inset-0 w-full h-full object-cover opacity-40" alt="Church Atmosphere" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent" />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 text-center">
+          <span className="inline-block px-4 py-1.5 mb-6 text-sm font-bold tracking-widest text-brand-400 uppercase bg-brand-400/10 border border-brand-400/20 rounded-full">Church Life & News</span>
+          <h1 className="text-5xl md:text-7xl font-black text-white mb-6 tracking-tight">The <span className="text-brand-400">Billboard</span></h1>
+          <p className="text-xl text-slate-300 max-w-2xl mx-auto font-light leading-relaxed">Your central hub for everything happening in our community.</p>
+        </div>
+      </section>
+
+      <main className="max-w-7xl mx-auto px-4 py-16">
+        <div className="flex flex-col lg:flex-row gap-16">
+          <div className="flex-1 space-y-12">
+            
+            {/* Filter Tabs */}
+            <div className="flex items-center gap-2 border-b border-slate-100 pb-6 overflow-x-auto">
+              {categories.map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => { setActiveTab(tab); setCurrentPage(1); }}
+                  className={`px-5 py-2 text-sm font-bold rounded-xl capitalize transition-all whitespace-nowrap ${
+                    activeTab === tab
+                      ? 'bg-brand-600 text-white shadow-lg shadow-brand-200'
+                      : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+
+            {/* Posts Grid */}
+            <div className="grid gap-12">
+              {currentPosts.map((post) => (
+                <article key={post.id} className="group relative">
+                  <div className="relative h-96 w-full rounded-3xl overflow-hidden mb-6">
+                    <img src={post.image} alt={post.title} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
+                    <div className="absolute top-6 left-6">
+                      <span className="px-4 py-2 bg-white/90 backdrop-blur text-brand-600 text-xs font-black rounded-full uppercase tracking-tighter shadow-xl">{post.type}</span>
+                    </div>
+                  </div>
+                  <div className="max-w-3xl">
+                    <div className="flex items-center gap-3 text-slate-400 text-sm mb-3"><Clock className="w-4 h-4 text-brand-500" /> {post.date}</div>
+                    <h2 className="text-3xl font-black text-slate-900 mb-4 group-hover:text-brand-600 transition-colors leading-tight">{post.title}</h2>
+                    <p className="text-slate-500 text-lg leading-relaxed mb-6">{post.description}</p>
+                    <Link
+                      href={`/billboard/${post.id}`}
+                      className="inline-flex items-center gap-2 font-bold text-brand-600 group/btn"
+                    >
+                      Keep Reading <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
+                    </Link>
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 pt-12 border-t border-slate-100">
+                <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} className="p-2 rounded-xl border border-slate-200 disabled:opacity-30"><ChevronLeft /></button>
+                {[...Array(totalPages)].map((_, i) => (
+                  <button key={i+1} onClick={() => setCurrentPage(i+1)} className={`w-10 h-10 rounded-xl font-bold ${currentPage === i+1 ? 'bg-brand-600 text-white shadow-md' : 'text-slate-500'}`}>{i+1}</button>
+                ))}
+                <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} className="p-2 rounded-xl border border-slate-200 disabled:opacity-30"><ChevronRight /></button>
+              </div>
+            )}
+          </div>
+
+          {/* Sidebar */}
+          <aside className="w-full lg:w-[400px] space-y-12">
+            <section className="bg-slate-50 p-8 rounded-[40px]">
+              <div className="flex items-center gap-3 mb-8">
+                <div className="p-2 bg-white rounded-xl shadow-sm"><BookOpen className="w-5 h-5 text-brand-600" /></div>
+                <h3 className="font-black text-xl tracking-tight">Blog Feed</h3>
+              </div>
+              <RecentBlogs blogs={recentBlogs} loading={isBlogsLoading} />
+            </section>
+
+            <section className="relative overflow-hidden bg-slate-900 p-8 rounded-[40px] text-white shadow-2xl">
+              <div className="absolute top-0 right-0 p-8 opacity-10"><Calendar className="w-32 h-32 rotate-12" /></div>
+              <h3 className="relative font-black text-2xl mb-8 tracking-tight flex items-center gap-2">Upcoming <span className="text-brand-400">Events</span></h3>
+              <EventsSidebar limit={3} />
+            </section>
+
+            <section className="p-8 border border-slate-100 rounded-[40px]">
+              <div className="flex items-center gap-3 mb-8">
+                <div className="p-2 bg-brand-50 rounded-xl"><Mic className="w-5 h-5 text-brand-600" /></div>
+                <h3 className="font-black text-xl tracking-tight">Podcasts</h3>
+              </div>
+              <PodcastSidebar limit={3}/>
+            </section>
+
+            <section className="bg-brand-600 p-8 rounded-[40px] text-white relative overflow-hidden group">
+              <div className="relative z-10">
+                <div className="bg-white/20 w-12 h-12 rounded-2xl flex items-center justify-center mb-6"><Bell className="w-6 h-6 text-white" /></div>
+                <h3 className="text-2xl font-black mb-3 leading-tight">Join Our Community</h3>
+                <p className="text-brand-100 mb-8 text-sm font-medium leading-relaxed">Subscribe for updates.</p>
+                <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+                  <input type="email" placeholder="Your email address" className="w-full bg-white/10 border border-white/20 rounded-2xl px-5 py-4 text-sm outline-none" />
+                  <button className="w-full bg-white text-brand-600 font-black py-4 rounded-2xl flex items-center justify-center gap-2 hover:bg-brand-50 transition-all">Subscribe Now <Send className="w-4 h-4" /></button>
+                </form>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </main>
+    </div>
+  );
+}
