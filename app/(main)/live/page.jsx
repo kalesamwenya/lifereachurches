@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Users, Share2, ChevronRight, Radio } from 'lucide-react';
+import { Share2, ChevronRight, Radio } from 'lucide-react';
 import { Button } from '@/components/UIComponents';
 import axios from 'axios';
 import LiveChat from '@/components/LiveChat';
@@ -13,7 +13,6 @@ export default function LivePage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isStreamOnline, setIsStreamOnline] = useState(false);
-
 
     // Fetch active stream metadata loop (Runs silently every 30 seconds)
     useEffect(() => {
@@ -38,14 +37,12 @@ export default function LivePage() {
             setIsStreamOnline(false);
             setError("Unable to connect to stream server");
         } finally {
-            // Only toggle the global page layout spinner state on the very first load
             if (isInitialLoad) {
                 setLoading(false);
             }
         }
     }
 
-    // Helper to dynamically extract the public_id from the database playback_url or stream_key
     const getEmbedUrl = () => {
         if (!activeStream) return '';
         
@@ -73,7 +70,6 @@ export default function LivePage() {
         return `https://player.cloudinary.com/embed/?cloud_name=${cloudName}&public_id=${targetPublicId}&profile=${profile}&autoplay=true`;
     };
 
-    // Global load wheel fires exclusively on initial landing mount
     if (loading) {
         return (
             <div className="bg-black min-h-screen text-white pt-32 pb-12 flex items-center justify-center">
@@ -115,9 +111,11 @@ export default function LivePage() {
     }
 
     return (
-        <div className="bg-black min-h-screen text-white pt-32 pb-12">
-            <div className="container mx-auto px-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+        <div className="bg-black min-h-screen text-white pt-24 md:pt-32 pb-6 md:pb-12 flex flex-col h-screen md:h-auto overflow-hidden md:overflow-visible">
+            <div className="container mx-auto px-4 md:px-6 flex-1 flex flex-col md:block min-h-0">
+                
+                {/* Meta Header Bar - Hidden on small mobile to maximize video and chat viewport estate */}
+                <div className="hidden md:flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 shrink-0">
                     <div>
                         <div className="flex items-center gap-3 mb-2">
                             <div className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-red-950/40 border border-red-800/60 shadow-[0_0_15px_rgba(220,38,38,0.15)] animate-pulse">
@@ -140,11 +138,14 @@ export default function LivePage() {
                     </div>
                 </div>
 
-                <div className="grid lg:grid-cols-4 gap-8">
-                    <div className="lg:col-span-3">
+                {/* Primary Screen Framework Mesh */}
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-8 flex-1 min-h-0 h-full md:h-auto items-start">
+                    
+                    {/* Media Display & Metadata Column Section */}
+                    <div className="lg:col-span-3 flex flex-col h-full overflow-y-auto md:overflow-visible no-scrollbar pb-2 md:pb-0">
                         
-                        {/* Cloudinary Embed Player Frame Wrapper */}
-                        <div className="aspect-video bg-gray-950 rounded-2xl overflow-hidden shadow-2xl border border-gray-800 relative group select-none">
+                        {/* Video Frame Wrapper - Portrait by default on mobile, Landscape on desktop */}
+                        <div className="sticky top-0 z-50 md:relative w-full aspect-[3/4] md:aspect-video bg-gray-950 rounded-b-2xl md:rounded-2xl overflow-hidden shadow-2xl border-b md:border border-gray-800 shrink-0">
                             <iframe
                                 src={getEmbedUrl()}
                                 className="w-full h-full absolute inset-0 border-0"
@@ -154,25 +155,29 @@ export default function LivePage() {
                             />
                         </div>
 
-                        {/* Metadata Description Block */}
-                        <div className="bg-gray-900 p-8 rounded-2xl border border-gray-800 mt-8">
-                            <h2 className="text-2xl font-bold mb-4">{activeStream.title}</h2>
-                            <p className="text-gray-400 leading-relaxed mb-6">
+                        {/* Stream Context Details Panel */}
+                        <div className="bg-gray-900 p-5 md:p-8 rounded-2xl border border-gray-800 mt-4 md:mt-8 mx-2 md:mx-0 shrink-0">
+                            <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4">{activeStream.title}</h2>
+                            <p className="text-sm text-gray-400 leading-relaxed mb-6">
                                 {activeStream.description || "Welcome to our live service! We're glad you're here with us today."}
                             </p>
                             
                             <div className="flex gap-4 flex-wrap">
-                                <button className="text-orange-500 font-bold text-sm hover:text-white transition-colors flex items-center gap-2">
+                                <button className="text-orange-500 font-bold text-xs md:text-sm hover:text-white transition-colors flex items-center gap-2">
                                     Connection Card <ChevronRight size={16} />
                                 </button>
-                                <button className="text-orange-500 font-bold text-sm hover:text-white transition-colors flex items-center gap-2">
+                                <button className="text-orange-500 font-bold text-xs md:text-sm hover:text-white transition-colors flex items-center gap-2">
                                     Prayer Request <ChevronRight size={16} />
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                   <LiveChat streamId={activeStream.id} />
+                    {/* Isolated Independent Live Chat Module Column */}
+                    <div className="h-[38vh] md:h-[600px] lg:h-[700px] min-h-0 flex flex-col px-2 md:px-0 pb-4 md:pb-0">
+                        <LiveChat streamId={activeStream.id} />
+                    </div>
+
                 </div>
             </div>
         </div>
