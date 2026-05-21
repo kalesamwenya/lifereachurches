@@ -256,7 +256,7 @@ export default function Hero() {
 
                             <a href={heroContent.button1_link}>
 
-                                <Button className="w-full sm:w-auto !px-8 !py-4 text-lg">
+                                <Button className="w-full sm:w-auto p-8 text-lg">
 
                                     🔴 {heroContent.button1_text}
 

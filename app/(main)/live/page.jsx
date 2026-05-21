@@ -5,6 +5,8 @@ import { Share2, ChevronRight, Radio } from 'lucide-react';
 import { Button } from '@/components/UIComponents';
 import axios from 'axios';
 import LiveChat from '@/components/LiveChat';
+import Link from 'next/link';
+import CustomPlayer from '@/components/streams/CustomPlayer';
 
 const API_URL = 'https://content.lifereachchurch.org';
 
@@ -14,9 +16,8 @@ export default function LivePage() {
     const [error, setError] = useState(null);
     const [isStreamOnline, setIsStreamOnline] = useState(false);
 
-    // Fetch active stream metadata loop (Runs silently every 30 seconds)
     useEffect(() => {
-        fetchActiveStream(true); // pass true to indicate this is our initial boot fetch
+        fetchActiveStream(true);
     }, []);
 
     async function fetchActiveStream(isInitialLoad = false) {
@@ -43,31 +44,29 @@ export default function LivePage() {
         }
     }
 
-    const getEmbedUrl = () => {
-        if (!activeStream) return '';
+    // Modern Native Share handler mapping thumbnails
+    const handleShareStream = async () => {
+        if (!activeStream) return;
         
-        const cloudName = "dj3u4klst";
-        const profile = "cld-live-streaming";
-        
-        let targetPublicId = activeStream.hls_public_id || activeStream.public_id || "";
+        const absoluteThumbnailUrl = activeStream.thumbnail_url 
+            ? `${API_URL}${activeStream.thumbnail_url}`
+            : '';
 
-        if (!targetPublicId && activeStream.playback_url) {
-            if (activeStream.playback_url.includes('live_streams/')) {
-                const parts = activeStream.playback_url.split('live_streams/');
-                if (parts[1]) targetPublicId = parts[1].split('.')[0];
-            } else if (activeStream.playback_url.includes('/live/')) {
-                const parts = activeStream.playback_url.split('/live/');
-                if (parts[1]) targetPublicId = parts[1].split('.')[0];
+        try {
+            if (navigator.share) {
+                await navigator.share({
+                    title: activeStream.title,
+                    text: activeStream.description || "Join our Live Broadcast experience!",
+                    url: window.location.href,
+                });
+            } else {
+                // Fallback copying to clipboard
+                await navigator.clipboard.writeText(window.location.href);
+                alert("Stream link copied to your clipboard!");
             }
+        } catch (err) {
+            console.error("Share canceled or failed:", err);
         }
-
-        if (!targetPublicId) {
-            targetPublicId = activeStream.stream_key || "";
-        }
-
-        targetPublicId = targetPublicId.replace('.m3u8', '').trim();
-
-        return `https://player.cloudinary.com/embed/?cloud_name=${cloudName}&public_id=${targetPublicId}&profile=${profile}&autoplay=true`;
     };
 
     if (loading) {
@@ -96,7 +95,7 @@ export default function LivePage() {
                             <div className="space-y-3 text-left max-w-md mx-auto">
                                 <div className="flex justify-between items-center">
                                     <span className="text-gray-400">Sunday Service</span>
-                                    <span className="font-bold text-orange-500">9:00 AM - 1:00 AM</span>
+                                    <span className="font-bold text-orange-500">9:00 AM - 1:00 PM</span>
                                 </div>
                                 <div className="flex justify-between items-center">
                                     <span className="text-gray-400">Thursday Midweek Service</span>
@@ -114,7 +113,7 @@ export default function LivePage() {
         <div className="bg-black min-h-screen text-white pt-24 md:pt-32 pb-6 md:pb-12 flex flex-col h-screen md:h-auto overflow-hidden md:overflow-visible">
             <div className="container mx-auto px-4 md:px-6 flex-1 flex flex-col md:block min-h-0">
                 
-                {/* Meta Header Bar - Hidden on small mobile to maximize video and chat viewport estate */}
+                {/* Meta Header Bar */}
                 <div className="hidden md:flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 shrink-0">
                     <div>
                         <div className="flex items-center gap-3 mb-2">
@@ -128,7 +127,7 @@ export default function LivePage() {
                         <Button 
                             variant="dark" 
                             className="border border-gray-800 text-sm flex items-center gap-2"
-                            onClick={() => navigator.share?.({ title: activeStream.title, url: window.location.href })}
+                            onClick={handleShareStream}
                         >
                             <Share2 size={16} /> Share Stream
                         </Button>
@@ -144,31 +143,29 @@ export default function LivePage() {
                     {/* Media Display & Metadata Column Section */}
                     <div className="lg:col-span-3 flex flex-col h-full overflow-y-auto md:overflow-visible no-scrollbar pb-2 md:pb-0">
                         
-                        {/* Video Frame Wrapper - Portrait by default on mobile, Landscape on desktop */}
-                        <div className="sticky top-0 z-50 md:relative w-full aspect-[3/4] md:aspect-video bg-gray-950 rounded-b-2xl md:rounded-2xl overflow-hidden shadow-2xl border-b md:border border-gray-800 shrink-0">
-                            <iframe
-                                src={getEmbedUrl()}
-                                className="w-full h-full absolute inset-0 border-0"
-                                allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-                                allowFullScreen
-                                sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
-                            />
-                        </div>
+                        {/* Custom HLS Stream Player Core passing down API prefix for the thumbnail image source */}
+                        <CustomPlayer 
+                            streamUrl={activeStream.playback_url} 
+                            thumbnailUrl={activeStream.thumbnail_url ? `${API_URL}${activeStream.thumbnail_url}` : null} 
+                        />
 
                         {/* Stream Context Details Panel */}
-                        <div className="bg-gray-900 p-5 md:p-8 rounded-2xl border border-gray-800 mt-4 md:mt-8 mx-2 md:mx-0 shrink-0">
+                        <div className="bg-gray-900 p-5 md:p-8 rounded-2xl border border-gray-800 mt-4 md:mt-8 mx-2 md:mx-0 shrink-0 max-sm:hidden">
                             <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4">{activeStream.title}</h2>
                             <p className="text-sm text-gray-400 leading-relaxed mb-6">
                                 {activeStream.description || "Welcome to our live service! We're glad you're here with us today."}
                             </p>
                             
                             <div className="flex gap-4 flex-wrap">
-                                <button className="text-orange-500 font-bold text-xs md:text-sm hover:text-white transition-colors flex items-center gap-2">
-                                    Connection Card <ChevronRight size={16} />
-                                </button>
-                                <button className="text-orange-500 font-bold text-xs md:text-sm hover:text-white transition-colors flex items-center gap-2">
+                                <Link href="/testimonies/submit" className="text-orange-500 font-bold text-xs md:text-sm hover:text-white transition-colors flex items-center gap-2">
+                                    Give a Testimony <ChevronRight size={16} />
+                                </Link>
+                                <Link href="/contact" className="text-orange-500 font-bold text-xs md:text-sm hover:text-white transition-colors flex items-center gap-2">
                                     Prayer Request <ChevronRight size={16} />
-                                </button>
+                                </Link>
+                                <Link href="/plan-visit" className="text-orange-500 font-bold text-xs md:text-sm hover:text-white transition-colors flex items-center gap-2">
+                                    Plan visit <ChevronRight size={16} />
+                                </Link>
                             </div>
                         </div>
                     </div>
