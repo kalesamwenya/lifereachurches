@@ -49,23 +49,27 @@ export default function GrowthTrack() {
         <section className="py-24 bg-white">
             <div className="container mx-auto px-6">
                 <SectionTitle title="Take Your Next Step" subtitle="Growth Track" />
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6">
+                <div className="grid grid-cols-1 max-sm:grid-cols-2 lg:grid-cols-6 gap-6">
                     {nextSteps.map((step, idx) => (
-                        <motion.div
-                            key={idx}
-                            whileHover={{ y: -5 }}
-                            className="p-8 rounded-3xl bg-gray-50 hover:bg-white hover:shadow-xl transition-all border border-gray-100 text-center group cursor-pointer"
-                        >
-                            <div className="w-16 h-16 bg-white rounded-full mx-auto flex items-center justify-center shadow-sm mb-6 text-3xl group-hover:scale-110 transition-transform">
-                                {step.icon}
-                            </div>
-                            <h4 className="text-xl font-bold text-gray-900 mb-2">{step.title}</h4>
-                            <p className="text-sm text-gray-500 mb-6">{step.desc}</p>
-                            <Link href={`${step.link}`} className="w-8 h-8 rounded-full bg-gray-200 mx-auto flex items-center justify-center group-hover:bg-orange-500 group-hover:text-white transition-colors">
-                                <ArrowUpRight size={16} />
-                            </Link>
-                        </motion.div>
-                    ))}
+    <motion.div
+        key={idx}
+        whileHover={{ y: -5 }}
+        className="p-8 rounded-3xl bg-gray-50 hover:bg-white hover:shadow-xl transition-all border border-gray-100 text-center group cursor-pointer"
+    >
+        <Link href={step.link} className="block h-full">
+            <div className="w-16 h-16 bg-white rounded-full mx-auto flex items-center justify-center shadow-sm mb-6 text-3xl group-hover:scale-110 transition-transform">
+                {step.icon}
+            </div>
+            <h4 className="text-xl font-bold text-gray-900 mb-2">{step.title}</h4>
+            <p className="text-sm text-gray-500 mb-6">{step.desc}</p>
+            
+            {/* Changed from Link to div since the parent handles the routing */}
+            <div className="w-8 h-8 rounded-full bg-gray-200 mx-auto flex items-center justify-center group-hover:bg-orange-500 group-hover:text-white transition-colors">
+                <ArrowUpRight size={16} />
+            </div>
+        </Link>
+    </motion.div>
+))}
                 </div>
             </div>
         </section>

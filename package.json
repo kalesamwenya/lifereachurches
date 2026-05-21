@@ -14,7 +14,9 @@
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "axios": "^1.13.2",
+    "cloudinary-video-player": "^4.0.2",
     "date-fns": "^4.1.0",
+    "emoji-picker-react": "^4.19.1",
     "framer-motion": "^12.23.25",
     "hls.js": "^1.6.15",
     "html2canvas": "^1.4.1",

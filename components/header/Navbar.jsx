@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Image from "next/image";
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
+import { FaBlog } from 'react-icons/fa';
 
 const usePathname = () => {
     const [pathname, setPathname] = useState('/');
@@ -56,14 +57,14 @@ export default function Navbar() {
 
     const departments = [
         { name: 'Ministries', path: '/ministries' },
-        { name: 'Book Library', path: '/library' },
         { name: 'Volunteer', path: '/volunteer' },
     ];
 
     const media = [
         // { name: 'Sermons', path: '/sermons', icon: <PlayCircle size={14} /> },
         { name: 'Podcast', path: '/podcast', icon: <Mic size={14} /> },
-        { name: 'Blog', path: '/blog', icon: <BookOpen size={14} /> },
+        { name: 'Blog', path: '/blog', icon: <FaBlog size={14} /> },
+         { name: 'Book Library', path: '/library', icon:<BookOpen size={14}/>},
         { name: 'Gallery', path: '/gallery', icon: <ImageIcon size={14} /> },
     ];
 
