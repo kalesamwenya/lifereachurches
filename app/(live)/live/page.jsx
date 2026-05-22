@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Share2, ChevronRight, Radio } from 'lucide-react';
+import { Share2, ChevronRight, Radio, Loader2 } from 'lucide-react';
 import { Button } from '@/components/UIComponents';
 import axios from 'axios';
 import LiveChat from '@/components/LiveChat';
@@ -15,6 +15,7 @@ export default function LivePage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isStreamOnline, setIsStreamOnline] = useState(false);
+    const [isSharing, setIsSharing] = useState(false);
 
     useEffect(() => {
         fetchActiveStream(true);
@@ -28,6 +29,9 @@ export default function LivePage() {
                 setActiveStream(response.data.stream);
                 setIsStreamOnline(true);
                 setError(null);
+                
+                // CRITICAL FOR CLIENT SIDE METRICS: 
+                document.title = response.data.stream.title;
             } else {
                 setActiveStream(null);
                 setIsStreamOnline(false);
@@ -44,28 +48,51 @@ export default function LivePage() {
         }
     }
 
-    // Modern Native Share handler mapping thumbnails
     const handleShareStream = async () => {
         if (!activeStream) return;
+        setIsSharing(true);
         
         const absoluteThumbnailUrl = activeStream.thumbnail_url 
-            ? `${API_URL}${activeStream.thumbnail_url}`
+            ? (activeStream.thumbnail_url.startsWith('http') ? activeStream.thumbnail_url : `${API_URL}${activeStream.thumbnail_url}`)
             : '';
+        
+        const shareTitle = activeStream.title;
+        const shareText = activeStream.description || "Join our Live Broadcast experience!";
+        const shareUrl = window.location.href;
 
         try {
             if (navigator.share) {
-                await navigator.share({
-                    title: activeStream.title,
-                    text: activeStream.description || "Join our Live Broadcast experience!",
-                    url: window.location.href,
-                });
+                const shareData = {
+                    title: shareTitle,
+                    text: `${shareText}\n\n`,
+                    url: shareUrl,
+                };
+
+                if (absoluteThumbnailUrl && navigator.canShare) {
+                    try {
+                        const response = await fetch(absoluteThumbnailUrl, { mode: 'cors' });
+                        const blob = await response.blob();
+                        const extension = absoluteThumbnailUrl.split('.').pop().split(/\#|\?/)[0] || 'png';
+                        const file = new File([blob], `stream_preview.${extension}`, { type: blob.type });
+
+                        if (navigator.canShare({ files: [file] })) {
+                            shareData.files = [file];
+                        }
+                    } catch (imageErr) {
+                        console.warn("Could not attach thumbnail blob to share payload:", imageErr);
+                    }
+                }
+
+                await navigator.share(shareData);
             } else {
-                // Fallback copying to clipboard
-                await navigator.clipboard.writeText(window.location.href);
-                alert("Stream link copied to your clipboard!");
+                const structuralText = `✨ *${shareTitle}* ✨\n\n📝 ${shareText}\n\n📺 Watch Live Here: ${shareUrl}`;
+                await navigator.clipboard.writeText(structuralText);
+                alert("Stream connection data and links copied to clipboard!");
             }
         } catch (err) {
             console.error("Share canceled or failed:", err);
+        } finally {
+            setIsSharing(false);
         }
     };
 
@@ -110,11 +137,14 @@ export default function LivePage() {
     }
 
     return (
-        <div className="bg-black min-h-screen text-white pt-24 md:pt-32 pb-6 md:pb-12 flex flex-col h-screen md:h-auto overflow-hidden md:overflow-visible">
-            <div className="container mx-auto px-4 md:px-6 flex-1 flex flex-col md:block min-h-0">
+        /* - Mobile/Tablet (< 1024px): strict h-screen and overflow-hidden to freeze viewport and lock components.
+           - Desktop (>= 1024px): returns cleanly to auto dimensions and standard document scrolling behavior.
+        */
+        <div className="bg-black h-screen lg:h-auto min-h-screen text-white pt-0 lg:pt-32 pb-0 lg:pb-12 flex flex-col overflow-hidden lg:overflow-visible">
+            <div className="w-full flex-1 flex flex-col lg:container lg:mx-auto lg:px-6 min-h-0">
                 
-                {/* Meta Header Bar */}
-                <div className="hidden md:flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 shrink-0">
+                {/* Meta Header Bar - Safely removed from cluttered mobile views */}
+                <div className="hidden lg:flex flex-col lg:flex-row lg:items-center justify-between mb-8 gap-4 shrink-0">
                     <div>
                         <div className="flex items-center gap-3 mb-2">
                             <div className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-red-950/40 border border-red-800/60 shadow-[0_0_15px_rgba(220,38,38,0.15)] animate-pulse">
@@ -128,8 +158,10 @@ export default function LivePage() {
                             variant="dark" 
                             className="border border-gray-800 text-sm flex items-center gap-2"
                             onClick={handleShareStream}
+                            disabled={isSharing}
                         >
-                            <Share2 size={16} /> Share Stream
+                            {isSharing ? <Loader2 size={16} className="animate-spin" /> : <Share2 size={16} />} 
+                            {isSharing ? "Processing..." : "Share Stream"}
                         </Button>
                         <Button className="text-sm" onClick={() => window.location.href = '/give'}>
                             Give Online
@@ -137,41 +169,57 @@ export default function LivePage() {
                     </div>
                 </div>
 
-                {/* Primary Screen Framework Mesh */}
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-8 flex-1 min-h-0 h-full md:h-auto items-start">
+                {/* Main Container Layout Split:
+                    - Mobile/Tablet: Stacked via vertical flex column container bounds.
+                    - Desktop: Restored back to the rigid 4-column wide grid mesh system.
+                */}
+                <div className="flex flex-col lg:grid lg:grid-cols-4 gap-0 lg:gap-8 flex-1 min-h-0 h-full lg:h-auto items-stretch lg:items-start">
                     
-                    {/* Media Display & Metadata Column Section */}
-                    <div className="lg:col-span-3 flex flex-col h-full overflow-y-auto md:overflow-visible no-scrollbar pb-2 md:pb-0">
+                    {/* Media Display Column */}
+                    <div className="lg:col-span-3 flex flex-col shrink-0 lg:h-full lg:overflow-visible relative">
                         
-                        {/* Custom HLS Stream Player Core passing down API prefix for the thumbnail image source */}
-                        <CustomPlayer 
-                            streamUrl={activeStream.playback_url} 
-                            thumbnailUrl={activeStream.thumbnail_url ? `${API_URL}${activeStream.thumbnail_url}` : null} 
-                        />
+                        {/* Video Frame */}
+                        <div className="w-full bg-black relative z-10">
+                            <CustomPlayer 
+                                streamUrl={activeStream.playback_url} 
+                                thumbnailUrl={activeStream.thumbnail_url ? (activeStream.thumbnail_url.startsWith('http') ? activeStream.thumbnail_url : `${API_URL}${activeStream.thumbnail_url}`) : null} 
+                            />
+                            
+                            {/* Live HUD Pill - Renders floating context explicitly over small mobile players */}
+                            <div className="lg:hidden absolute top-3 left-3 flex items-center gap-2 z-20 pointer-events-none">
+                                <span className="bg-red-600 text-[10px] font-black uppercase px-2 py-0.5 rounded tracking-wider flex items-center gap-1 shadow-lg">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+                                    Live
+                                </span>
+                            </div>
+                        </div>
 
-                        {/* Stream Context Details Panel */}
-                        <div className="bg-gray-900 p-5 md:p-8 rounded-2xl border border-gray-800 mt-4 md:mt-8 mx-2 md:mx-0 shrink-0 max-sm:hidden">
-                            <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4">{activeStream.title}</h2>
+                        {/* Stream Context Meta Panel - Hidden on small/medium configurations to optimize screen real-estate */}
+                        <div className="hidden lg:block bg-gray-900 p-5 lg:p-8 rounded-2xl border border-gray-800 mt-8 mx-0 shrink-0">
+                            <h2 className="text-xl lg:text-2xl font-bold mb-4">{activeStream.title}</h2>
                             <p className="text-sm text-gray-400 leading-relaxed mb-6">
                                 {activeStream.description || "Welcome to our live service! We're glad you're here with us today."}
                             </p>
                             
                             <div className="flex gap-4 flex-wrap">
-                                <Link href="/testimonies/submit" className="text-orange-500 font-bold text-xs md:text-sm hover:text-white transition-colors flex items-center gap-2">
+                                <Link href="/testimonies/submit" className="text-orange-500 font-bold text-sm hover:text-white transition-colors flex items-center gap-2">
                                     Give a Testimony <ChevronRight size={16} />
                                 </Link>
-                                <Link href="/contact" className="text-orange-500 font-bold text-xs md:text-sm hover:text-white transition-colors flex items-center gap-2">
+                                <Link href="/contact" className="text-orange-500 font-bold text-sm hover:text-white transition-colors flex items-center gap-2">
                                     Prayer Request <ChevronRight size={16} />
                                 </Link>
-                                <Link href="/plan-visit" className="text-orange-500 font-bold text-xs md:text-sm hover:text-white transition-colors flex items-center gap-2">
+                                <Link href="/plan-visit" className="text-orange-500 font-bold text-sm hover:text-white transition-colors flex items-center gap-2">
                                     Plan visit <ChevronRight size={16} />
                                 </Link>
                             </div>
                         </div>
                     </div>
 
-                    {/* Isolated Independent Live Chat Module Column */}
-                    <div className="h-[38vh] md:h-[600px] lg:h-[700px] min-h-0 flex flex-col px-2 md:px-0 pb-4 md:pb-0">
+                    {/* Live Chat Stream Framework Section:
+                        - Mobile/Tablet: Fills all remaining pixels precisely via `flex-1 min-h-0`.
+                        - Desktop: Regains structural layout bounds (`lg:h-[700px]`).
+                    */}
+                    <div className="flex-1 lg:flex-none lg:h-[700px] min-h-0 flex flex-col relative bg-zinc-950 lg:bg-transparent">
                         <LiveChat streamId={activeStream.id} />
                     </div>
 

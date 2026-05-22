@@ -194,12 +194,12 @@ export default function CustomPlayer({ streamUrl, thumbnailUrl }) {
                     style={{ backgroundImage: `url(${thumbnailUrl})` }}
                 >
                     {/* Blurred Background Matting */}
-                    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+                    <div className="absolute inset-0 bg-black/10 backdrop-blur-sm" />
                     
                     {/* Stylized Big Floating Central Play Action Trigger */}
-                    <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center text-white shadow-xl transform group-hover:scale-110 transition-transform duration-300 z-10">
+                    <button  onClick={togglePlayback} className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center text-white shadow-xl transform group-hover:scale-110 transition-transform duration-300 z-10">
                         <Play size={28} fill="currentColor" className="ml-1" />
-                    </div>
+                    </button>
                 </div>
             )}
 
